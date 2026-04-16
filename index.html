@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Báo Giá Sunbot 2026</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sunbot: { 50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa', 500: '#f97316', 600: '#ea580c', 700: '#c2410c', 800: '#9a3412', 900: '#7c2d12' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        body { font-family: 'Arial', sans-serif; background-color: #f3f4f6; }
+
+        .preview-wrapper { width: 100%; overflow-x: auto; padding: 2rem; display: flex; justify-content: center; }
+        
+        .a4-container { 
+            width: 210mm; 
+            min-height: 297mm; 
+            background: white; 
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); 
+            padding: 15mm; 
+            box-sizing: border-box; 
+            margin: 0 auto;
+        }
+        
+        #quote-document { width: 100%; background-color: white; color: #1f2937; }
+
+        .avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; display: table-row; }
+        .avoid-break-block { page-break-inside: avoid !important; break-inside: avoid !important; }
+
+        .table-lock { width: 100% !important; table-layout: fixed !important; border-collapse: collapse; }
+        .table-lock th, .table-lock td { word-wrap: break-word !important; overflow-wrap: break-word !important; }
+
+        /* NATIVE PRINT ENGINE */
+        @media print {
+            @page { size: A4 portrait; margin: 12mm; }
+            body { background: white !important; margin: 0 !important; padding: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .no-print { display: none !important; }
+            .preview-wrapper { padding: 0 !important; width: 100% !important; display: block !important; overflow: visible !important; }
+            .a4-container { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; min-height: auto; }
+            #quote-document { width: 100% !important; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // ==========================================
+        // DATA 1: BÁO GIÁ TRỌN GÓI (PACKAGES)
+        // ==========================================
+        const packagesData = {
+            basic: {
+                id: 'basic', name: 'Gói Cơ Bản (BASIC)', title: 'GÓI TRIỂN KHAI CƠ BẢN (BASIC)\nCHƯƠNG TRÌNH GIÁO DỤC SUNBOT', isPhased: true,
+                phase1Name: "A. ĐẦU TƯ KHỞI TẠO (NĂM 1)", phase1Total: 67100000,
+                phase1Items: [
+                    { stt: '1', name: 'Hệ thống học cụ Lập trình (03 Robot, 02 Bản đồ, Thẻ/CNV, Android Box)', unit: 'Hệ', qty: 1, price: 20100000, total: 20100000, note: 'Sở hữu vĩnh viễn' },
+                    { stt: '2', name: 'Bản quyền Phần mềm Lập trình Level 1-9', unit: 'Năm', qty: 1, price: 15000000, total: 15000000, note: 'Bản quyền năm 1' },
+                    { stt: '3', name: 'Đào tạo tập huấn giáo viên chuẩn (1 đợt)', unit: 'Khóa', qty: 1, price: 11000000, total: 11000000, note: 'Tối đa 20 nhân sự' },
+                    { stt: '4', name: 'Sát hạch và cấp chứng nhận giáo viên', unit: 'Người', qty: 5, price: 500000, total: 2500000, note: 'Chứng nhận chuyên môn' },
+                    { stt: '5', name: 'Gói Đồng hành và Đảm bảo vận hành (12 tháng)', unit: 'Gói', qty: 1, price: 13600000, total: 13600000, note: 'Hỗ trợ chuyên môn' },
+                    { stt: '6', name: 'Bộ nhận diện lớp học theo chuẩn Sunbot', unit: 'Bộ', qty: 1, price: 5000000, total: 5000000, note: 'Trang trí không gian' }
+                ],
+                phase2Name: "B. DUY TRÌ & VẬN HÀNH (NĂM 2 VÀ NĂM 3)", phase2Total: 30000000,
+                phase2Items: [
+                    { stt: '7', name: 'Gia hạn Bản quyền Phần mềm Lập trình (Năm 2)', unit: 'Năm', qty: 1, price: 15000000, total: 15000000, note: 'Dự kiến thu năm 2' },
+                    { stt: '8', name: 'Gia hạn Bản quyền Phần mềm Lập trình (Năm 3)', unit: 'Năm', qty: 1, price: 15000000, total: 15000000, note: 'Dự kiến thu năm 3' }
+                ], total: 97100000
+            },
+            standard: {
+                id: 'standard', name: 'Gói Chuẩn (STANDARD)', title: 'GÓI TRIỂN KHAI CHUẨN (STANDARD)\nCHƯƠNG TRÌNH GIÁO DỤC SUNBOT', isPhased: true,
+                phase1Name: "A. ĐẦU TƯ KHỞI TẠO (NĂM 1)", phase1Total: 98600000,
+                phase1Items: [
+                    { stt: '1', name: 'Hệ thống học cụ Lập trình (03 Robot, Phụ kiện, Android Box)', unit: 'Hệ', qty: 1, price: 20100000, total: 20100000, note: 'Sở hữu vĩnh viễn' },
+                    { stt: '2', name: 'Bộ học cụ STEAM chuẩn (Sử dụng cho Năm 1)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Vật tư tiêu hao năm 1' },
+                    { stt: '3', name: 'Bản quyền Phần mềm Lập trình & Giáo án STEAM (Năm 1)', unit: 'Gói', qty: 1, price: 21000000, total: 21000000, note: 'Bản quyền số' },
+                    { stt: '4', name: 'Đào tạo tập huấn giáo viên (2 đợt) & Sát hạch 10 GV', unit: 'Gói', qty: 1, price: 24000000, total: 24000000, note: 'Chuyên sâu & Cấp bằng' },
+                    { stt: '5', name: 'Bộ nhận diện lớp học & Không gian chuẩn', unit: 'Bộ', qty: 1, price: 6500000, total: 6500000, note: 'Trang trí lớp học' },
+                    { stt: '6', name: 'Gói Đồng hành và Đảm bảo vận hành chất lượng (Năm 1)', unit: 'Gói', qty: 1, price: 12000000, total: 12000000, note: 'Hỗ trợ tháng/quý' }
+                ],
+                phase2Name: "B. DUY TRÌ BẢN QUYỀN & HỌC LIỆU (NĂM 2 VÀ NĂM 3)", phase2Total: 96000000,
+                phase2Items: [
+                    { stt: '7', name: 'Phí Bản quyền & Đồng hành vận hành (Năm 2)', unit: 'Năm', qty: 1, price: 33000000, total: 33000000, note: 'Dự kiến năm 2' },
+                    { stt: '8', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 2)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' },
+                    { stt: '9', name: 'Phí Bản quyền & Đồng hành vận hành (Năm 3)', unit: 'Năm', qty: 1, price: 33000000, total: 33000000, note: 'Dự kiến năm 3' },
+                    { stt: '10', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 3)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' }
+                ], total: 194600000
+            },
+            premium: {
+                id: 'premium', name: 'Gói Cao Cấp (PREMIUM)', title: 'GÓI TRIỂN KHAI CAO CẤP (PREMIUM)\nCHƯƠNG TRÌNH GIÁO DỤC SUNBOT', isPhased: true,
+                phase1Name: "A. ĐẦU TƯ KHỞI TẠO (NĂM 1)", phase1Total: 222300000,
+                phase1Items: [
+                    { stt: '1', name: 'Hệ thống học cụ Lập trình cao cấp (06 Robot, Phụ kiện, Box)', unit: 'Hệ', qty: 1, price: 40800000, total: 40800000, note: 'Mật độ tương tác cao' },
+                    { stt: '2', name: 'Nội thất mầm non chuẩn phòng Sunbot Premium', unit: 'Bộ', qty: 1, price: 60000000, total: 60000000, note: 'Thiết kế riêng biệt' },
+                    { stt: '3', name: 'Bộ nhận diện cao cấp & Hệ thống Khen thưởng thi đua', unit: 'Gói', qty: 1, price: 35000000, total: 35000000, note: 'Thi đua toàn trường' },
+                    { stt: '4', name: 'Bộ học cụ STEAM chuẩn (Sử dụng cho Năm 1)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Vật tư tiêu hao' },
+                    { stt: '5', name: 'Bản quyền Phần mềm Lập trình & Giáo án STEAM (Năm 1)', unit: 'Gói', qty: 1, price: 21000000, total: 21000000, note: 'Bản quyền số' },
+                    { stt: '6', name: 'Đào tạo tập huấn giáo viên chuẩn Sunbot & Sát hạch 10 GV', unit: 'Gói', qty: 1, price: 24000000, total: 24000000, note: 'Chuyên sâu & Cấp bằng' },
+                    { stt: '7', name: 'Gói Vận hành, Truyền thông & Sự kiện trải nghiệm (Năm 1)', unit: 'Gói', qty: 1, price: 26500000, total: 26500000, note: 'Sự kiện 150 trẻ' }
+                ],
+                phase2Name: "B. DUY TRÌ BẢN QUYỀN & HỌC LIỆU (NĂM 2 VÀ NĂM 3)", phase2Total: 122000000,
+                phase2Items: [
+                    { stt: '8', name: 'Phí Bản quyền, Đồng hành & Hỗ trợ Sự kiện (Năm 2)', unit: 'Gói', qty: 1, price: 46000000, total: 46000000, note: 'Dự kiến năm 2' },
+                    { stt: '9', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 2)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' },
+                    { stt: '10', name: 'Phí Bản quyền, Đồng hành & Hỗ trợ Sự kiện (Năm 3)', unit: 'Gói', qty: 1, price: 46000000, total: 46000000, note: 'Dự kiến năm 3' },
+                    { stt: '11', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 3)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' }
+                ], total: 344300000
+            },
+            bidding: {
+                id: 'bidding', name: 'Giải Pháp Toàn Diện (Thầu)', title: 'GIẢI PHÁP PHÒNG STEAM LAB SUNBOT TOÀN DIỆN\nDÀNH CHO TRƯỜNG TRỌNG ĐIỂM', isPhased: false,
+                items: [
+                    { stt: '', name: 'NHÓM 1: HỆ THỐNG THIẾT BỊ PHẦN CỨNG', unit: '', qty: '', price: 0, total: 0, note: '' },
+                    { stt: '1.1', name: 'Robot giáo dục thông minh Sunbot (Bảo hành On-site 36T)', unit: 'Chiếc', qty: 6, price: 6000000, total: 36000000, note: 'Thiết bị Lập trình' },
+                    { stt: '1.2', name: 'Hệ thống phụ kiện đồng bộ (Bản đồ, Thẻ lệnh, Android Box)', unit: 'Hệ', qty: 1, price: 16875000, total: 16875000, note: 'Trang bị trọn gói' },
+                    { stt: '1.3', name: 'Màn hình hiển thị & Khung tương tác thông minh 43 inch', unit: 'Hệ', qty: 1, price: 15000000, total: 15000000, note: 'Hạ tầng tương tác' },
+                    { stt: '', name: 'NHÓM 2: BẢN QUYỀN & HỌC LIỆU', unit: '', qty: '', price: 0, total: 0, note: '' },
+                    { stt: '2.1', name: 'Bản quyền Phần mềm Lập trình Sunbot Level 1-9 (3 Năm)', unit: 'Gói', qty: 1, price: 56250000, total: 56250000, note: 'Site License 36T' },
+                    { stt: '2.2', name: 'Bản quyền hệ thống Giáo án điện tử STEAM (3 Năm)', unit: 'Gói', qty: 1, price: 22500000, total: 22500000, note: 'Site License 36T' },
+                    { stt: '2.3', name: 'Bộ học liệu STEAM chuyên dụng cho học sinh (Trọn bộ 3 năm)', unit: 'Bộ', qty: 3, price: 18750000, total: 56250000, note: 'Vật tư tiêu hao' },
+                    { stt: '', name: 'NHÓM 3: KHÔNG GIAN CHUYÊN BIỆT', unit: '', qty: '', price: 0, total: 0, note: '' },
+                    { stt: '3.1', name: 'Hệ thống nội thất chuyên dụng phòng Lab STEAM Sunbot', unit: 'Bộ', qty: 1, price: 75000000, total: 75000000, note: 'Bàn, ghế, tủ, kệ' },
+                    { stt: '3.2', name: 'Nhận diện không gian, trang trí tường & Hệ thống thi đua', unit: 'Gói', qty: 1, price: 43750000, total: 43750000, note: 'Decor & Khen thưởng' },
+                    { stt: '', name: 'NHÓM 4: ĐÀO TẠO & VẬN HÀNH DỊCH VỤ', unit: '', qty: '', price: 0, total: 0, note: '' },
+                    { stt: '4.1', name: 'Khóa đào tạo chuyển giao công nghệ & Sát hạch cấp chứng chỉ', unit: 'Khóa', qty: 1, price: 31250000, total: 31250000, note: 'Đào tạo giáo viên' },
+                    { stt: '4.2', name: 'Đào tạo bổ sung & Cập nhật chuyên môn định kỳ (N2 & 3)', unit: 'Gói', qty: 1, price: 27500000, total: 27500000, note: 'Duy trì nhân sự' },
+                    { stt: '4.3', name: 'Gói Đồng hành chuyên môn & Đánh giá chất lượng (36 tháng)', unit: 'Gói', qty: 1, price: 54000000, total: 54000000, note: 'Hỗ trợ trực tiếp' },
+                    { stt: '4.4', name: 'Tổ chức sự kiện STEAM Festival, Ngày hội trải nghiệm', unit: 'Gói', qty: 1, price: 58500000, total: 58500000, note: 'Truyền thông tuyển sinh' }
+                ], total: 492875000
+            }
+        };
+
+        // ==========================================
+        // DATA 2: KHO HÀNG BÁN LẺ FULL TỪ CSV
+        // ==========================================
+        const retailInventory = [
+            // Học cụ Sunbot - Flashcard
+            { id: 'fc1', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 1', unit: 'Bộ', price: 750000 },
+            { id: 'fc2', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 2', unit: 'Bộ', price: 650000 },
+            { id: 'fc3', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 3', unit: 'Bộ', price: 500000 },
+            { id: 'fc4', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 4', unit: 'Bộ', price: 475000 },
+            { id: 'fc5', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 5', unit: 'Bộ', price: 550000 },
+            { id: 'fc6', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 6', unit: 'Bộ', price: 425000 },
+            { id: 'fc7', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 7', unit: 'Bộ', price: 375000 },
+            { id: 'fc8', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 8', unit: 'Bộ', price: 275000 },
+
+            // Học cụ Sunbot - Bản đồ
+            { id: 'bd1', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 1', unit: 'Bộ', price: 210000 },
+            { id: 'bd2', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 2', unit: 'Bộ', price: 210000 },
+            { id: 'bd3', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 3', unit: 'Bộ', price: 210000 },
+            { id: 'bd4', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 4', unit: 'Bộ', price: 210000 },
+            { id: 'bd5', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 5', unit: 'Bộ', price: 210000 },
+            { id: 'bd6', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 6', unit: 'Bộ', price: 210000 },
+            { id: 'bd7', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 7', unit: 'Bộ', price: 210000 },
+            { id: 'bd8', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 8', unit: 'Bộ', price: 210000 },
+
+            // Sửa chữa Robot
+            { id: 'sc1', category: 'Linh kiện Robot', name: 'Vỏ nhựa trên', unit: 'Cái', price: 500000 },
+            { id: 'sc2', category: 'Linh kiện Robot', name: 'Đế nhựa dưới', unit: 'Cái', price: 400000 },
+            { id: 'sc3', category: 'Linh kiện Robot', name: 'Nút bấm lệnh', unit: 'Cái', price: 15000 },
+            { id: 'sc4', category: 'Linh kiện Robot', name: 'Chun bánh xe', unit: 'Cái', price: 30000 },
+            { id: 'sc5', category: 'Linh kiện Robot', name: 'Bánh xe (nhựa)', unit: 'Cái', price: 40000 },
+            { id: 'sc6', category: 'Linh kiện Robot', name: 'Bánh bi kim loại', unit: 'Cái', price: 50000 },
+            { id: 'sc7', category: 'Linh kiện Robot', name: 'Động cơ', unit: 'Cái', price: 100000 },
+            { id: 'sc8', category: 'Linh kiện Robot', name: 'Mạch nguồn', unit: 'Bộ', price: 100000 },
+            { id: 'sc9', category: 'Linh kiện Robot', name: 'Mạch main', unit: 'Bộ', price: 200000 },
+            { id: 'sc10', category: 'Linh kiện Robot', name: 'Sạc lẻ', unit: 'Cái', price: 100000 },
+            { id: 'sc11', category: 'Linh kiện Robot', name: 'Pin thay thế', unit: 'Bộ', price: 400000 },
+
+            // NVL STEAM
+            { id: 'st1', category: 'Vật tư STEAM', name: 'Hộp pin', unit: 'Cái', price: 20000 },
+            { id: 'st2', category: 'Vật tư STEAM', name: 'Cánh quạt', unit: 'Cái', price: 5000 },
+            { id: 'st3', category: 'Vật tư STEAM', name: 'Động cơ thường', unit: 'Cái', price: 15000 },
+            { id: 'st4', category: 'Vật tư STEAM', name: 'Động cơ giảm tốc 1/2 trục', unit: 'Cái', price: 30000 },
+            { id: 'st5', category: 'Vật tư STEAM', name: 'Máy bơm nước', unit: 'Cái', price: 30000 },
+            { id: 'st6', category: 'Vật tư STEAM', name: 'Thanh trục dài 8,5cm', unit: 'Thanh', price: 3500 },
+            { id: 'st7', category: 'Vật tư STEAM', name: 'Thanh trục ngắn 3cm', unit: 'Thanh', price: 2000 },
+            { id: 'st8', category: 'Vật tư STEAM', name: 'Mạch trái cây', unit: 'Bộ', price: 40000 },
+            { id: 'st9', category: 'Vật tư STEAM', name: 'Bánh xe', unit: 'Cái', price: 4000 },
+            { id: 'st10', category: 'Vật tư STEAM', name: 'Đèn led', unit: 'Túi 100c', price: 50000 },
+            { id: 'st11', category: 'Vật tư STEAM', name: 'Vòng xoay tạo bóng', unit: 'Cái', price: 20000 },
+            { id: 'st12', category: 'Vật tư STEAM', name: 'Khay đựng nước thổi bóng', unit: 'Cái', price: 25000 },
+            { id: 'st13', category: 'Vật tư STEAM', name: 'Kẹp cá sấu', unit: 'Cái', price: 4000 },
+            { id: 'st14', category: 'Vật tư STEAM', name: 'Chân cắm đèn led', unit: 'Cái', price: 3000 },
+            { id: 'st15', category: 'Vật tư STEAM', name: 'Bìa chân + đế Cân thăng bằng', unit: 'Bộ', price: 8000 },
+            { id: 'st16', category: 'Vật tư STEAM', name: 'Tay áo cao su trục 2mm', unit: 'Cái', price: 500 },
+            { id: 'st17', category: 'Vật tư STEAM', name: 'Bánh răng xoắn ốc', unit: 'Cái', price: 2000 },
+            { id: 'st18', category: 'Vật tư STEAM', name: 'Vỏ cabin thuyền nhựa', unit: 'Cái', price: 35000 },
+            { id: 'st19', category: 'Vật tư STEAM', name: 'Chân vịt 3 cánh', unit: 'Cái', price: 8000 },
+            { id: 'st20', category: 'Vật tư STEAM', name: 'Miếng bìa hình con bọ', unit: 'Cái', price: 20000 },
+            { id: 'st21', category: 'Vật tư STEAM', name: 'Xi lanh', unit: 'Cái', price: 4000 },
+            { id: 'st22', category: 'Vật tư STEAM', name: 'Dây nối xi lanh', unit: 'Mét', price: 20000 },
+            { id: 'st23', category: 'Vật tư STEAM', name: 'Lồng quay + Đế Máy vắt quần áo', unit: 'Bộ', price: 20000 },
+            { id: 'st24', category: 'Vật tư STEAM', name: 'Động cơ rung', unit: 'Cái', price: 15000 },
+            { id: 'st25', category: 'Vật tư STEAM', name: 'Bộ bìa Lễ đài / Robot đẩy hàng', unit: 'Bộ', price: 27000 },
+            { id: 'st26', category: 'Vật tư STEAM', name: 'Loa mini + Miếng bìa + Dây', unit: 'Bộ', price: 130000 },
+            { id: 'st27', category: 'Vật tư STEAM', name: 'Đĩa CD', unit: 'Cái', price: 8000 }
+        ];
+
+        const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+
+        const InputField = ({ label, value, onChange, type = "text" }) => (
+            <div className="mb-3">
+                <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">{label}</label>
+                <input type={type} className="w-full px-3 py-1.5 border border-gray-300 rounded text-[13px] focus:outline-none focus:ring-1 focus:ring-sunbot-500 shadow-sm" value={value} onChange={(e) => onChange(e.target.value)} />
+            </div>
+        );
+
+        function App() {
+            const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+            const [password, setPassword] = React.useState('');
+            
+            const [quoteMode, setQuoteMode] = React.useState('package'); 
+            const [customerName, setCustomerName] = React.useState('Trường Mầm Non Hướng Dương');
+            const [quoterName, setQuoterName] = React.useState('Nguyễn Tường Vân');
+            const [quoteDate, setQuoteDate] = React.useState(new Date().toISOString().split('T')[0]);
+            
+            const [selectedPackage, setSelectedPackage] = React.useState('bidding');
+            
+            const [searchQuery, setSearchQuery] = React.useState('');
+            const [filterCategory, setFilterCategory] = React.useState('All');
+            const [cart, setCart] = React.useState([]);
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                if (password === 'sunbot2026') setIsAuthenticated(true);
+                else alert('Sai mật khẩu!');
+            };
+
+            const handleNativePrint = () => {
+                const originalTitle = document.title;
+                const fileName = quoteMode === 'package' ? selectedPackage : 'Ban_Le_Vat_Tu';
+                document.title = `Bao_Gia_Sunbot_${fileName}_${quoteDate}`;
+                window.print();
+                setTimeout(() => { document.title = originalTitle; }, 1000);
+            };
+
+            const addToCart = (item) => {
+                setCart(prev => {
+                    const existing = prev.find(i => i.item.id === item.id);
+                    if (existing) return prev.map(i => i.item.id === item.id ? { ...i, qty: i.qty + 1 } : i);
+                    return [...prev, { item, qty: 1, note: '' }];
+                });
+            };
+
+            const updateCartQty = (id, newQty) => {
+                if (newQty < 1) return;
+                setCart(prev => prev.map(i => i.item.id === id ? { ...i, qty: newQty } : i));
+            };
+            
+            const updateCartNote = (id, note) => {
+                setCart(prev => prev.map(i => i.item.id === id ? { ...i, note } : i));
+            };
+
+            const removeFromCart = (id) => {
+                setCart(prev => prev.filter(i => i.item.id !== id));
+            };
+
+            const retailCategories = ['All', ...new Set(retailInventory.map(i => i.category))];
+            const filteredInventory = retailInventory.filter(i => 
+                (filterCategory === 'All' || i.category === filterCategory) &&
+                i.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            const retailTotal = cart.reduce((sum, cartItem) => sum + (cartItem.item.price * cartItem.qty), 0);
+
+            if (!isAuthenticated) {
+                return (
+                    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+                        <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-md border-t-4 border-sunbot-500 text-center">
+                            <i className="fa-solid fa-robot text-sunbot-600 text-5xl mb-4"></i>
+                            <h2 className="text-xl font-bold mb-4 text-gray-800">Hệ Thống Báo Giá Sunbot</h2>
+                            <form onSubmit={handleLogin}>
+                                <input type="password" placeholder="Nhập mật khẩu..." className="w-full px-4 py-2 border rounded-lg mb-4 focus:ring-2 focus:ring-sunbot-500 outline-none" value={password} onChange={e => setPassword(e.target.value)} />
+                                <button className="w-full bg-sunbot-600 text-white font-bold py-2 rounded-lg hover:bg-sunbot-700 transition">Đăng Nhập</button>
+                            </form>
+                        </div>
+                    </div>
+                );
+            }
+
+            const currentPkg = packagesData[selectedPackage];
+            const dateObj = new Date(quoteDate);
+            const dateStr = `Ngày ${dateObj.getDate().toString().padStart(2, '0')} tháng ${((dateObj.getMonth() + 1).toString().padStart(2, '0'))} năm ${dateObj.getFullYear()}`;
+
+            return (
+                <div className="min-h-screen flex flex-col md:flex-row">
+                    
+                    {/* BẢNG ĐIỀU KHIỂN BÊN TRÁI (ẨN KHI IN) */}
+                    <div className="w-full md:w-[380px] bg-white border-r border-gray-200 shadow-xl z-10 flex flex-col no-print h-screen sticky top-0">
+                        
+                        <div className="flex bg-gray-100 p-1.5 border-b border-gray-200">
+                            <button onClick={() => setQuoteMode('package')} className={`flex-1 py-2 text-[12px] font-bold rounded-md transition-all ${quoteMode === 'package' ? 'bg-white text-sunbot-700 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>
+                                BÁO GIÁ DỰ ÁN
+                            </button>
+                            <button onClick={() => setQuoteMode('retail')} className={`flex-1 py-2 text-[12px] font-bold rounded-md transition-all ${quoteMode === 'retail' ? 'bg-white text-sunbot-700 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>
+                                BÁN LẺ / SỬA CHỮA
+                            </button>
+                        </div>
+
+                        <div className="p-5 overflow-y-auto flex-1 flex flex-col">
+                            <h2 className="font-bold text-[13px] text-gray-800 border-b border-gray-200 pb-1.5 mb-3 uppercase">Thông tin chung</h2>
+                            <InputField label="Tên Khách Hàng / Đối Tác" value={customerName} onChange={setCustomerName} />
+                            <InputField label="Chuyên viên Phụ trách" value={quoterName} onChange={setQuoterName} />
+                            <InputField label="Ngày Báo Giá" type="date" value={quoteDate} onChange={setQuoteDate} />
+
+                            {/* CHẾ ĐỘ PACKAGE */}
+                            {quoteMode === 'package' && (
+                                <div className="mt-2">
+                                    <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase">Cấu hình hệ thống</label>
+                                    <div className="space-y-2">
+                                        {Object.keys(packagesData).map((key) => (
+                                            <label key={key} className={`flex items-center p-2.5 border rounded cursor-pointer transition-all ${selectedPackage === key ? 'border-sunbot-500 bg-sunbot-50 text-sunbot-700 font-bold shadow-sm' : 'hover:bg-gray-50 text-gray-600'}`}>
+                                                <input type="radio" name="package" value={key} checked={selectedPackage === key} onChange={() => setSelectedPackage(key)} className="mr-3 w-4 h-4 text-sunbot-600" />
+                                                <span className="text-[13px]">{packagesData[key].name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* CHẾ ĐỘ RETAIL CART */}
+                            {quoteMode === 'retail' && (
+                                <div className="mt-2 flex flex-col flex-1 h-full">
+                                    <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase flex items-center justify-between border-b border-gray-200 pb-1">
+                                        <span>Kho vật tư</span>
+                                        <span className="text-[10px] font-normal text-gray-500 normal-case bg-gray-100 px-1.5 py-0.5 rounded">{retailInventory.length} sản phẩm</span>
+                                    </label>
+                                    <div className="flex space-x-2 mb-2">
+                                        <select className="border border-gray-300 rounded px-2 py-1.5 text-[12px] w-[45%] focus:outline-none focus:border-sunbot-500 bg-white" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+                                            {retailCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                        </select>
+                                        <input type="text" placeholder="Gõ tên tìm kiếm..." className="border border-gray-300 rounded px-2 py-1.5 text-[12px] flex-1 focus:outline-none focus:border-sunbot-500" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                                    </div>
+                                    
+                                    <div className="border border-gray-200 rounded-md bg-gray-50 h-48 overflow-y-auto p-1 mb-4 shadow-inner">
+                                        {filteredInventory.length === 0 && <p className="text-center text-[11px] text-gray-400 mt-16">Không tìm thấy vật tư.</p>}
+                                        {filteredInventory.map(item => (
+                                            <div key={item.id} className="flex justify-between items-center p-2 hover:bg-white rounded border-b border-transparent hover:border-gray-200 group transition-all">
+                                                <div className="flex-1 min-w-0 pr-2">
+                                                    <p className="text-[11.5px] font-bold text-gray-700 truncate group-hover:text-sunbot-700">{item.name}</p>
+                                                    <p className="text-[10.5px] text-gray-500">{formatCurrency(item.price)} / {item.unit}</p>
+                                                </div>
+                                                <button onClick={() => addToCart(item)} className="bg-white border border-gray-300 text-gray-600 hover:bg-sunbot-500 hover:text-white hover:border-sunbot-500 w-6 h-6 flex items-center justify-center rounded transition-colors">
+                                                    <i className="fa-solid fa-plus text-[10px]"></i>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase border-b border-gray-200 pb-1 flex justify-between">
+                                        <span>Giỏ hàng báo giá</span>
+                                        <span className="text-sunbot-600 font-bold">{cart.length} món</span>
+                                    </label>
+                                    <div className="flex-1 overflow-y-auto mb-2 space-y-2 min-h-[150px]">
+                                        {cart.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                                <i className="fa-solid fa-cart-arrow-down text-2xl mb-2 opacity-30"></i>
+                                                <p className="text-[11px] italic">Bấm [+] ở trên để thêm vật tư</p>
+                                            </div>
+                                        ) : 
+                                            cart.map(c => (
+                                                <div key={c.item.id} className="bg-white border border-gray-200 rounded p-2.5 shadow-sm relative group">
+                                                    <div className="flex justify-between items-start mb-1.5">
+                                                        <p className="text-[12px] font-bold text-gray-800 pr-5 leading-tight">{c.item.name}</p>
+                                                        <button onClick={() => removeFromCart(c.item.id)} className="text-gray-300 hover:text-red-500 absolute top-2 right-2">
+                                                            <i className="fa-solid fa-xmark"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <div className="flex items-center border border-gray-300 rounded bg-gray-50">
+                                                            <button onClick={() => updateCartQty(c.item.id, c.qty - 1)} className="px-2 py-0.5 text-gray-500 hover:text-black">-</button>
+                                                            <input type="number" min="1" value={c.qty} onChange={(e) => updateCartQty(c.item.id, parseInt(e.target.value) || 1)} className="w-8 bg-transparent text-center text-[11px] font-bold focus:outline-none" />
+                                                            <button onClick={() => updateCartQty(c.item.id, c.qty + 1)} className="px-2 py-0.5 text-gray-500 hover:text-black">+</button>
+                                                        </div>
+                                                        <span className="text-[10.5px] text-gray-500 italic">x {formatCurrency(c.item.price)}</span>
+                                                        <span className="text-[12px] font-bold text-sunbot-700 ml-auto">{formatCurrency(c.item.price * c.qty)}</span>
+                                                    </div>
+                                                    <input type="text" placeholder="Ghi chú thêm (Tùy chọn)..." value={c.note} onChange={(e) => updateCartNote(c.item.id, e.target.value)} className="w-full mt-2 border-b border-dashed border-gray-300 text-[10.5px] italic focus:outline-none focus:border-sunbot-400 px-1 py-0.5 bg-transparent text-gray-600" />
+                                                </div>
+                                            ))
+                                        }
+                                    </div>
+                                    {cart.length > 0 && (
+                                        <div className="mt-2 pt-2 border-t border-gray-200 flex justify-between items-center bg-sunbot-50 p-2 rounded">
+                                            <span className="text-[12px] font-bold text-gray-700">TỔNG CỘNG:</span>
+                                            <span className="text-[14px] font-extrabold text-sunbot-700">{formatCurrency(retailTotal)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-5 border-t border-gray-200 bg-gray-50 mt-auto">
+                            <button 
+                                onClick={handleNativePrint} 
+                                className="w-full flex items-center justify-center space-x-2 bg-sunbot-600 text-white font-bold py-3.5 rounded-lg shadow-md hover:bg-sunbot-700 hover:shadow-lg transition-all"
+                            >
+                                <i className="fa-solid fa-print"></i>
+                                <span className="text-[14px]">In Báo Giá A4 / Xuất PDF</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* VÙNG KHUNG A4 XEM TRƯỚC */}
+                    <div className="preview-wrapper flex-1">
+                        <div className="a4-container">
+                            <div id="quote-document">
+                                
+                                {/* HEADER CHUNG */}
+                                <div className="flex justify-between items-start mb-6 border-b-[2px] border-sunbot-600 pb-3">
+                                    <div>
+                                        <h3 className="font-bold text-[14px] text-sunbot-700 uppercase tracking-wide">Công ty Cổ Phần Công Nghệ Giáo Dục Kiro VN</h3>
+                                        <div className="text-[11px] text-gray-600 mt-1.5 space-y-0.5 font-medium">
+                                            <p><span className="text-gray-800">Trụ sở:</span> Số 4 Lý Thường Kiệt, Cửa Nam, Hoàn Kiếm, Hà Nội</p>
+                                            <p><span className="text-gray-800">VPĐD:</span> Tầng 11 tháp A, tòa The Light, Tố Hữu, Hà Nội</p>
+                                            <p><span className="text-gray-800">Điện thoại:</span> 0866 109 086  |  <span className="text-gray-800">Web:</span> sunbot.vn</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right flex flex-col items-end">
+                                        <div className="flex items-center space-x-1.5 bg-sunbot-50 px-2.5 py-1 rounded border border-sunbot-100 mb-1.5">
+                                            <i className="fa-solid fa-robot text-sunbot-600 text-lg"></i>
+                                            <span className="font-extrabold text-[16px] text-sunbot-600 tracking-wider">SUNBOT</span>
+                                        </div>
+                                        <p className="text-[11px] italic text-gray-500">{dateStr}</p>
+                                    </div>
+                                </div>
+
+                                {/* TIÊU ĐỀ */}
+                                <div className="text-center mb-6 px-4">
+                                    <h1 className="text-[16px] font-bold uppercase text-gray-900 whitespace-pre-line leading-relaxed">
+                                        {quoteMode === 'package' ? currentPkg.title : "BẢNG BÁO GIÁ HỌC CỤ, VẬT TƯ\nVÀ DỊCH VỤ SỬA CHỮA SUNBOT"}
+                                    </h1>
+                                    <div className="w-12 h-1 bg-sunbot-500 mx-auto mt-3 rounded-full"></div>
+                                </div>
+
+                                {/* LỜI MỞ ĐẦU */}
+                                <div className="mb-5 text-justify text-[12px] text-gray-800 leading-[1.6]">
+                                    <p className="mb-1.5"><strong>Kính gửi: </strong> <span className="font-bold text-sunbot-700 uppercase">{customerName}</span></p>
+                                    <p>
+                                        {quoteMode === 'package' 
+                                            ? `Chúng tôi xin trân trọng gửi tới Quý Đơn vị bảng báo giá chi tiết cấu hình ${currentPkg.name} thuộc chương trình Lập trình tư duy và STEAM cùng Sunbot. Lộ trình đầu tư được phân bổ rõ ràng nhằm giúp nhà trường tối ưu dòng tiền, vận hành hiệu quả và bền vững.`
+                                            : "Chúng tôi xin trân trọng gửi tới Quý Đơn vị bảng báo giá chi tiết danh mục cung cấp học cụ lẻ, vật tư tiêu hao STEAM và dịch vụ bảo hành/sửa chữa theo yêu cầu như sau:"
+                                        }
+                                    </p>
+                                </div>
+
+                                {/* BẢNG GIÁ */}
+                                <table className="table-lock mb-6 text-[12px]">
+                                    <thead>
+                                        <tr className="bg-sunbot-600 text-white border-y-2 border-sunbot-800">
+                                            <th className="p-2 text-center border-x border-sunbot-700 font-bold" style={{ width: '5%' }}>STT</th>
+                                            <th className="p-2 text-left border-x border-sunbot-700 font-bold" style={{ width: '33%' }}>Nội dung hạng mục</th>
+                                            <th className="p-2 text-center border-x border-sunbot-700 font-bold" style={{ width: '6%' }}>ĐVT</th>
+                                            <th className="p-2 text-center border-x border-sunbot-700 font-bold" style={{ width: '5%' }}>SL</th>
+                                            <th className="p-2 text-right border-x border-sunbot-700 font-bold" style={{ width: '15%' }}>Đơn giá (₫)</th>
+                                            <th className="p-2 text-right border-x border-sunbot-700 font-bold" style={{ width: '18%' }}>Thành tiền (₫)</th>
+                                            <th className="p-2 text-center border-x border-sunbot-700 font-bold text-[11px]" style={{ width: '18%' }}>Ghi chú</th>
+                                        </tr>
+                                    </thead>
+                                    
+                                    <tbody className="text-gray-800 border-b border-gray-300">
+                                        
+                                        {/* 1. RENDER CHẾ ĐỘ PACKAGE */}
+                                        {quoteMode === 'package' && currentPkg.isPhased && (
+                                            <>
+                                                <tr className="bg-sunbot-100 text-sunbot-800 font-bold avoid-break border-b border-sunbot-200">
+                                                    <td colSpan="5" className="p-2 text-left uppercase border-x border-gray-300">{currentPkg.phase1Name}</td>
+                                                    <td className="p-2 text-right text-[13px] border-x border-gray-300">{formatCurrency(currentPkg.phase1Total)}</td>
+                                                    <td className="p-2 text-center text-[10.5px] font-normal italic border-x border-gray-300 text-gray-600">Đầu tư ban đầu</td>
+                                                </tr>
+                                                {currentPkg.phase1Items.map((item, idx) => (
+                                                    <tr key={`p1-${idx}`} className="avoid-break border-b border-gray-200 hover:bg-gray-50">
+                                                        <td className="p-2.5 text-center font-medium border-x border-gray-200 text-[11px]">{item.stt}</td>
+                                                        <td className="p-2.5 leading-snug border-x border-gray-200 font-medium text-gray-700">{item.name}</td>
+                                                        <td className="p-2.5 text-center text-gray-500 border-x border-gray-200">{item.unit}</td>
+                                                        <td className="p-2.5 text-center border-x border-gray-200">{item.qty}</td>
+                                                        <td className="p-2.5 text-right font-mono text-gray-600 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.price)}</td>
+                                                        <td className="p-2.5 text-right font-mono font-semibold text-gray-800 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.total)}</td>
+                                                        <td className="p-2 text-center text-[10.5px] text-gray-500 italic leading-tight border-x border-gray-200">{item.note}</td>
+                                                    </tr>
+                                                ))}
+
+                                                <tr className="bg-gray-100 text-gray-700 font-bold avoid-break border-y-2 border-gray-300">
+                                                    <td colSpan="5" className="p-2 text-left uppercase border-x border-gray-300">{currentPkg.phase2Name}</td>
+                                                    <td className="p-2 text-right text-[13px] border-x border-gray-300">{formatCurrency(currentPkg.phase2Total)}</td>
+                                                    <td className="p-2 text-center text-[10.5px] font-normal italic border-x border-gray-300 text-gray-500">Kế hoạch tài chính</td>
+                                                </tr>
+                                                {currentPkg.phase2Items.map((item, idx) => (
+                                                    <tr key={`p2-${idx}`} className="avoid-break border-b border-gray-200 hover:bg-gray-50">
+                                                        <td className="p-2.5 text-center font-medium border-x border-gray-200 text-[11px] text-gray-500">{item.stt}</td>
+                                                        <td className="p-2.5 leading-snug border-x border-gray-200 text-gray-600">{item.name}</td>
+                                                        <td className="p-2.5 text-center text-gray-400 border-x border-gray-200">{item.unit}</td>
+                                                        <td className="p-2.5 text-center border-x border-gray-200 text-gray-500">{item.qty}</td>
+                                                        <td className="p-2.5 text-right font-mono text-gray-400 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.price)}</td>
+                                                        <td className="p-2.5 text-right font-mono font-medium text-gray-600 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.total)}</td>
+                                                        <td className="p-2 text-center text-[10.5px] text-gray-400 italic leading-tight border-x border-gray-200">{item.note}</td>
+                                                    </tr>
+                                                ))}
+                                            </>
+                                        )}
+
+                                        {/* RENDER CHẾ ĐỘ PACKAGE - THẦU */}
+                                        {quoteMode === 'package' && !currentPkg.isPhased && currentPkg.items.map((item, idx) => {
+                                            if (!item.qty) {
+                                                return (
+                                                    <tr key={`bid-group-${idx}`} className="bg-sunbot-50 text-sunbot-800 font-bold avoid-break border-y border-sunbot-200">
+                                                        <td colSpan="7" className="p-2 text-left uppercase border-x border-gray-300 pl-4">{item.name}</td>
+                                                    </tr>
+                                                );
+                                            }
+                                            return (
+                                                <tr key={`bid-${idx}`} className="avoid-break border-b border-gray-200 hover:bg-gray-50">
+                                                    <td className="p-2.5 text-center font-medium border-x border-gray-200 text-[11px]">{item.stt}</td>
+                                                    <td className="p-2.5 leading-snug border-x border-gray-200 font-medium text-gray-800">{item.name}</td>
+                                                    <td className="p-2.5 text-center text-gray-500 border-x border-gray-200">{item.unit}</td>
+                                                    <td className="p-2.5 text-center border-x border-gray-200">{item.qty}</td>
+                                                    <td className="p-2.5 text-right font-mono text-gray-600 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.price)}</td>
+                                                    <td className="p-2.5 text-right font-mono font-semibold text-gray-900 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.total)}</td>
+                                                    <td className="p-2 text-center text-[10.5px] text-gray-500 italic leading-tight border-x border-gray-200">{item.note}</td>
+                                                </tr>
+                                            );
+                                        })}
+
+                                        {/* 2. RENDER CHẾ ĐỘ BÁN LẺ (RETAIL CART) */}
+                                        {quoteMode === 'retail' && cart.length === 0 ? (
+                                            <tr className="avoid-break"><td colSpan="7" className="p-12 text-center text-gray-400 italic">Vui lòng thêm vật tư vào bảng báo giá từ cột menu bên trái.</td></tr>
+                                        ) : null}
+                                        {quoteMode === 'retail' && cart.map((c, idx) => (
+                                            <tr key={`cart-${idx}`} className="avoid-break border-b border-gray-200 hover:bg-gray-50">
+                                                <td className="p-2.5 text-center font-medium border-x border-gray-200 text-[11px]">{idx + 1}</td>
+                                                <td className="p-2.5 leading-snug border-x border-gray-200 font-medium text-gray-800">
+                                                    {c.item.name} <br/><span className="text-[10px] text-gray-400 font-normal italic">Phân loại: {c.item.category}</span>
+                                                </td>
+                                                <td className="p-2.5 text-center text-gray-500 border-x border-gray-200">{c.item.unit}</td>
+                                                <td className="p-2.5 text-center border-x border-gray-200 font-bold">{c.qty}</td>
+                                                <td className="p-2.5 text-right font-mono text-gray-600 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(c.item.price)}</td>
+                                                <td className="p-2.5 text-right font-mono font-semibold text-gray-900 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(c.item.price * c.qty)}</td>
+                                                <td className="p-2 text-center text-[10.5px] text-gray-500 italic leading-tight border-x border-gray-200">{c.note}</td>
+                                            </tr>
+                                        ))}
+
+                                        {/* TỔNG CỘNG CHUNG */}
+                                        <tr className="bg-sunbot-50 font-extrabold text-gray-900 text-[13px] avoid-break border-y-2 border-sunbot-300">
+                                            <td colSpan="5" className="p-3 text-right uppercase text-sunbot-800 border-x border-gray-300">
+                                                {quoteMode === 'package' ? "Tổng Mức Đầu Tư Toàn Dự Án (3 Năm)" : "Tổng Giá Trị Thanh Toán (VNĐ)"}
+                                            </td>
+                                            <td colSpan="2" className="p-3 text-right text-sunbot-600 text-[15px] border-x border-gray-300 tracking-wide">
+                                                {formatCurrency(quoteMode === 'package' ? currentPkg.total : retailTotal)}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                {/* ĐIỀU KHOẢN */}
+                                <div className="mb-10 text-[11px] leading-relaxed text-gray-600 border border-gray-200 p-3.5 rounded bg-gray-50 avoid-break-block">
+                                    <h4 className="font-bold text-gray-800 mb-1.5 uppercase text-[11px] flex items-center">
+                                        <i className="fa-solid fa-shield-halved text-sunbot-600 mr-1.5"></i> Điều khoản & Chính sách
+                                    </h4>
+                                    <ul className="list-disc pl-5 space-y-1 text-justify">
+                                        <li>Báo giá chưa bao gồm thuế VAT và chi phí vận chuyển ngoài khu vực quy định.</li>
+                                        {quoteMode === 'retail' ? (
+                                            <>
+                                            <li><strong className="text-gray-700">Chính sách sửa chữa:</strong> Đối với linh kiện sửa chữa, robot sẽ được kỹ thuật viên tiếp nhận, kiểm tra lỗi và trả lại trong vòng 07-10 ngày làm việc.</li>
+                                            <li><strong className="text-gray-700">Thanh toán:</strong> Thanh toán 100% giá trị đơn hàng trước khi giao hàng hoặc theo thỏa thuận hợp đồng đã ký kết.</li>
+                                            </>
+                                        ) : (
+                                            <>
+                                            <li>Chi phí lưu trú, di chuyển của chuyên gia đào tạo (nếu phát sinh ngoài hợp đồng) do nhà trường đài thọ.</li>
+                                            <li><strong className="text-gray-700">Bảo hành:</strong> 1 đổi 1 hoặc sửa chữa theo tiêu chuẩn phần cứng; bảo trì liên tục hệ thống phần mềm.</li>
+                                            </>
+                                        )}
+                                        <li>Báo giá có giá trị tham chiếu trong vòng <strong className="text-sunbot-600">30 ngày</strong> kể từ ngày phát hành.</li>
+                                    </ul>
+                                </div>
+
+                                {/* CHỮ KÝ */}
+                                <div className="flex justify-between mt-8 text-center pb-8 avoid-break-block">
+                                    <div className="w-1/2">
+                                        <p className="font-bold text-gray-900 mb-20 uppercase text-[12px]">Đại diện Khách Hàng</p>
+                                        <p className="text-[11px] italic text-gray-500">(Ký và ghi rõ họ tên)</p>
+                                    </div>
+                                    <div className="w-1/2">
+                                        <p className="font-bold text-gray-900 mb-20 uppercase text-[12px]">Đại diện Kiro Việt Nam</p>
+                                        <p className="font-bold text-sunbot-600 uppercase tracking-wide text-[14px]">{quoterName}</p>
+                                        <p className="text-[11px] text-gray-500 mt-0.5">Chuyên viên Tư vấn Phụ trách</p>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
