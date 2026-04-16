@@ -35,6 +35,7 @@
 
         .preview-wrapper { width: 100%; overflow-x: auto; padding: 2rem; display: flex; justify-content: center; }
         
+        /* Giao diện khung A4 hiển thị trên web: 210mm với padding 15mm */
         .a4-container { 
             width: 210mm; 
             min-height: 297mm; 
@@ -47,19 +48,46 @@
         
         #quote-document { width: 100%; background-color: white; color: #1f2937; }
 
+        /* Khóa chống đứt gãy giữa các trang khi in */
         .avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; display: table-row; }
         .avoid-break-block { page-break-inside: avoid !important; break-inside: avoid !important; }
 
+        /* Ép bảng biểu tuân thủ tỷ lệ % tuyệt đối */
         .table-lock { width: 100% !important; table-layout: fixed !important; border-collapse: collapse; }
         .table-lock th, .table-lock td { word-wrap: break-word !important; overflow-wrap: break-word !important; }
 
-        /* NATIVE PRINT ENGINE */
+        /* NATIVE PRINT ENGINE - SỨC MẠNH IN ẤN CỦA TRÌNH DUYỆT */
         @media print {
-            @page { size: A4 portrait; margin: 12mm; }
-            body { background: white !important; margin: 0 !important; padding: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            @page { 
+                size: A4 portrait; 
+                margin: 12mm; /* Lề in hoàn hảo 1.2cm */
+            }
+            body { 
+                background: white !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
+            
             .no-print { display: none !important; }
-            .preview-wrapper { padding: 0 !important; width: 100% !important; display: block !important; overflow: visible !important; }
-            .a4-container { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; min-height: auto; }
+            
+            .preview-wrapper { 
+                padding: 0 !important; 
+                margin: 0 !important;
+                width: 100% !important; 
+                display: block !important; 
+                overflow: visible !important;
+            }
+            
+            .a4-container { 
+                width: 100% !important; 
+                max-width: 100% !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                box-shadow: none !important; 
+            }
+            
             #quote-document { width: 100% !important; }
         }
     </style>
@@ -152,10 +180,10 @@
         };
 
         // ==========================================
-        // DATA 2: KHO HÀNG BÁN LẺ FULL TỪ CSV
+        // DATA 2: KHO HÀNG BÁN LẺ ĐẦY ĐỦ TỪ CÁC FILE ĐÍNH KÈM
         // ==========================================
         const retailInventory = [
-            // Học cụ Sunbot - Flashcard
+            // Flashcard
             { id: 'fc1', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 1', unit: 'Bộ', price: 750000 },
             { id: 'fc2', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 2', unit: 'Bộ', price: 650000 },
             { id: 'fc3', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 3', unit: 'Bộ', price: 500000 },
@@ -165,7 +193,7 @@
             { id: 'fc7', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 7', unit: 'Bộ', price: 375000 },
             { id: 'fc8', category: 'Học cụ (Flashcard)', name: 'Flashcard Level 8', unit: 'Bộ', price: 275000 },
 
-            // Học cụ Sunbot - Bản đồ
+            // Bản đồ giấy
             { id: 'bd1', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 1', unit: 'Bộ', price: 210000 },
             { id: 'bd2', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 2', unit: 'Bộ', price: 210000 },
             { id: 'bd3', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 3', unit: 'Bộ', price: 210000 },
@@ -192,7 +220,7 @@
             { id: 'st1', category: 'Vật tư STEAM', name: 'Hộp pin', unit: 'Cái', price: 20000 },
             { id: 'st2', category: 'Vật tư STEAM', name: 'Cánh quạt', unit: 'Cái', price: 5000 },
             { id: 'st3', category: 'Vật tư STEAM', name: 'Động cơ thường', unit: 'Cái', price: 15000 },
-            { id: 'st4', category: 'Vật tư STEAM', name: 'Động cơ giảm tốc 1/2 trục', unit: 'Cái', price: 30000 },
+            { id: 'st4', category: 'Vật tư STEAM', name: 'Động cơ giảm tốc 1 trục/ 2 trục', unit: 'Cái', price: 30000 },
             { id: 'st5', category: 'Vật tư STEAM', name: 'Máy bơm nước', unit: 'Cái', price: 30000 },
             { id: 'st6', category: 'Vật tư STEAM', name: 'Thanh trục dài 8,5cm', unit: 'Thanh', price: 3500 },
             { id: 'st7', category: 'Vật tư STEAM', name: 'Thanh trục ngắn 3cm', unit: 'Thanh', price: 2000 },
@@ -211,11 +239,15 @@
             { id: 'st20', category: 'Vật tư STEAM', name: 'Miếng bìa hình con bọ', unit: 'Cái', price: 20000 },
             { id: 'st21', category: 'Vật tư STEAM', name: 'Xi lanh', unit: 'Cái', price: 4000 },
             { id: 'st22', category: 'Vật tư STEAM', name: 'Dây nối xi lanh', unit: 'Mét', price: 20000 },
-            { id: 'st23', category: 'Vật tư STEAM', name: 'Lồng quay + Đế Máy vắt quần áo', unit: 'Bộ', price: 20000 },
-            { id: 'st24', category: 'Vật tư STEAM', name: 'Động cơ rung', unit: 'Cái', price: 15000 },
-            { id: 'st25', category: 'Vật tư STEAM', name: 'Bộ bìa Lễ đài / Robot đẩy hàng', unit: 'Bộ', price: 27000 },
-            { id: 'st26', category: 'Vật tư STEAM', name: 'Loa mini + Miếng bìa + Dây', unit: 'Bộ', price: 130000 },
-            { id: 'st27', category: 'Vật tư STEAM', name: 'Đĩa CD', unit: 'Cái', price: 8000 }
+            { id: 'st23', category: 'Vật tư STEAM', name: 'Lồng quay Máy vắt quần áo', unit: 'Cái', price: 10000 },
+            { id: 'st24', category: 'Vật tư STEAM', name: 'Đế Máy vắt quần áo', unit: 'Cái', price: 10000 },
+            { id: 'st25', category: 'Vật tư STEAM', name: 'Động cơ rung', unit: 'Cái', price: 15000 },
+            { id: 'st26', category: 'Vật tư STEAM', name: 'Bộ bìa đế + thân Lễ đài', unit: 'Bộ', price: 20000 },
+            { id: 'st27', category: 'Vật tư STEAM', name: 'Bìa chân tay Robot đi bộ đẩy hàng', unit: 'Bộ', price: 7000 },
+            { id: 'st28', category: 'Vật tư STEAM', name: 'Miếng bìa hộp loa', unit: 'Bộ', price: 30000 },
+            { id: 'st29', category: 'Vật tư STEAM', name: 'Loa mini', unit: 'Cặp', price: 40000 },
+            { id: 'st30', category: 'Vật tư STEAM', name: 'Dây loa', unit: 'Cái', price: 60000 },
+            { id: 'st31', category: 'Vật tư STEAM', name: 'Đĩa CD', unit: 'Cái', price: 8000 }
         ];
 
         const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
@@ -232,9 +264,14 @@
             const [password, setPassword] = React.useState('');
             
             const [quoteMode, setQuoteMode] = React.useState('package'); 
-            const [customerName, setCustomerName] = React.useState('Trường Mầm Non Hướng Dương');
-            const [quoterName, setQuoterName] = React.useState('Nguyễn Tường Vân');
+            
+            // Default tên theo yêu cầu mới
+            const [customerName, setCustomerName] = React.useState('Trường mầm non ABC');
+            const [quoterName, setQuoterName] = React.useState('Nguyễn Thu A');
             const [quoteDate, setQuoteDate] = React.useState(new Date().toISOString().split('T')[0]);
+            
+            // State chứa đường dẫn logo được upload
+            const [logoUrl, setLogoUrl] = React.useState(null); 
             
             const [selectedPackage, setSelectedPackage] = React.useState('bidding');
             
@@ -242,10 +279,25 @@
             const [filterCategory, setFilterCategory] = React.useState('All');
             const [cart, setCart] = React.useState([]);
 
+            // Trạng thái Form Thêm mới Tùy chỉnh (Custom Item)
+            const [customItem, setCustomItem] = React.useState({ name: '', unit: 'Cái', price: '' });
+
             const handleLogin = (e) => {
                 e.preventDefault();
                 if (password === 'sunbot2026') setIsAuthenticated(true);
                 else alert('Sai mật khẩu!');
+            };
+
+            // Hàm xử lý tải file Logo lên
+            const handleLogoUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setLogoUrl(reader.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
             };
 
             const handleNativePrint = () => {
@@ -262,6 +314,23 @@
                     if (existing) return prev.map(i => i.item.id === item.id ? { ...i, qty: i.qty + 1 } : i);
                     return [...prev, { item, qty: 1, note: '' }];
                 });
+            };
+
+            // Hàm add hàng hóa không có sẵn trong danh mục
+            const handleAddCustomItem = () => {
+                if (!customItem.name || !customItem.price) {
+                    alert("Vui lòng nhập tên hàng hóa và đơn giá!");
+                    return;
+                }
+                const newItem = {
+                    id: 'custom-' + Date.now(),
+                    category: 'Tùy chỉnh',
+                    name: customItem.name,
+                    unit: customItem.unit || 'Cái',
+                    price: parseInt(customItem.price)
+                };
+                addToCart(newItem);
+                setCustomItem({ name: '', unit: 'Cái', price: '' }); // Reset form
             };
 
             const updateCartQty = (id, newQty) => {
@@ -323,12 +392,22 @@
                             <h2 className="font-bold text-[13px] text-gray-800 border-b border-gray-200 pb-1.5 mb-3 uppercase">Thông tin chung</h2>
                             <InputField label="Tên Khách Hàng / Đối Tác" value={customerName} onChange={setCustomerName} />
                             <InputField label="Chuyên viên Phụ trách" value={quoterName} onChange={setQuoterName} />
-                            <InputField label="Ngày Báo Giá" type="date" value={quoteDate} onChange={setQuoteDate} />
+                            
+                            <div className="flex space-x-2 mb-3">
+                                <div className="flex-1"><InputField label="Ngày Báo Giá" type="date" value={quoteDate} onChange={setQuoteDate} /></div>
+                            </div>
+                            
+                            {/* Nút Upload Logo */}
+                            <div className="mb-4 bg-gray-50 p-2.5 rounded border border-gray-200">
+                                <label className="block text-[12px] font-semibold text-gray-700 mb-1.5"><i className="fa-solid fa-image mr-1"></i> Tải Logo Công ty (Tùy chọn)</label>
+                                <input type="file" accept="image/*" onChange={handleLogoUpload} className="text-[11px] text-gray-500 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-[11px] file:font-semibold file:bg-sunbot-100 file:text-sunbot-700 hover:file:bg-sunbot-200 cursor-pointer w-full" />
+                                {logoUrl && <button onClick={() => setLogoUrl(null)} className="mt-2 text-[11px] text-red-500 hover:underline"><i className="fa-solid fa-trash-can mr-1"></i> Xóa logo hiện tại</button>}
+                            </div>
 
                             {/* CHẾ ĐỘ PACKAGE */}
                             {quoteMode === 'package' && (
                                 <div className="mt-2">
-                                    <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase">Cấu hình hệ thống</label>
+                                    <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase border-b pb-1">Cấu hình hệ thống</label>
                                     <div className="space-y-2">
                                         {Object.keys(packagesData).map((key) => (
                                             <label key={key} className={`flex items-center p-2.5 border rounded cursor-pointer transition-all ${selectedPackage === key ? 'border-sunbot-500 bg-sunbot-50 text-sunbot-700 font-bold shadow-sm' : 'hover:bg-gray-50 text-gray-600'}`}>
@@ -345,7 +424,7 @@
                                 <div className="mt-2 flex flex-col flex-1 h-full">
                                     <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase flex items-center justify-between border-b border-gray-200 pb-1">
                                         <span>Kho vật tư</span>
-                                        <span className="text-[10px] font-normal text-gray-500 normal-case bg-gray-100 px-1.5 py-0.5 rounded">{retailInventory.length} sản phẩm</span>
+                                        <span className="text-[10px] font-normal text-gray-500 normal-case bg-gray-100 px-1.5 py-0.5 rounded">{retailInventory.length} mục</span>
                                     </label>
                                     <div className="flex space-x-2 mb-2">
                                         <select className="border border-gray-300 rounded px-2 py-1.5 text-[12px] w-[45%] focus:outline-none focus:border-sunbot-500 bg-white" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
@@ -354,8 +433,9 @@
                                         <input type="text" placeholder="Gõ tên tìm kiếm..." className="border border-gray-300 rounded px-2 py-1.5 text-[12px] flex-1 focus:outline-none focus:border-sunbot-500" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
                                     </div>
                                     
-                                    <div className="border border-gray-200 rounded-md bg-gray-50 h-48 overflow-y-auto p-1 mb-4 shadow-inner">
-                                        {filteredInventory.length === 0 && <p className="text-center text-[11px] text-gray-400 mt-16">Không tìm thấy vật tư.</p>}
+                                    {/* Bảng chứa Kho hàng có sẵn */}
+                                    <div className="border border-gray-200 rounded-md bg-gray-50 h-32 overflow-y-auto p-1 mb-3 shadow-inner">
+                                        {filteredInventory.length === 0 && <p className="text-center text-[11px] text-gray-400 mt-10">Không tìm thấy vật tư.</p>}
                                         {filteredInventory.map(item => (
                                             <div key={item.id} className="flex justify-between items-center p-2 hover:bg-white rounded border-b border-transparent hover:border-gray-200 group transition-all">
                                                 <div className="flex-1 min-w-0 pr-2">
@@ -369,15 +449,28 @@
                                         ))}
                                     </div>
 
+                                    {/* FORM THÊM HẠNG MỤC TÙY CHỈNH */}
+                                    <div className="mb-4 bg-orange-50 border border-sunbot-200 p-2.5 rounded shadow-sm">
+                                        <p className="text-[11px] font-bold text-sunbot-800 mb-2 uppercase"><i className="fa-solid fa-pen-to-square mr-1"></i>Thêm Món Tùy Chỉnh</p>
+                                        <input type="text" placeholder="Tên hàng hóa/phụ kiện..." className="w-full px-2 py-1.5 border border-gray-300 rounded text-[12px] mb-2 focus:outline-none focus:border-sunbot-500" value={customItem.name} onChange={e => setCustomItem({...customItem, name: e.target.value})} />
+                                        <div className="flex space-x-2">
+                                            <input type="text" placeholder="ĐVT (VD: Cái)" className="w-1/3 px-2 py-1.5 border border-gray-300 rounded text-[12px] focus:outline-none focus:border-sunbot-500" value={customItem.unit} onChange={e => setCustomItem({...customItem, unit: e.target.value})} />
+                                            <input type="number" placeholder="Đơn giá (VND)" className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-[12px] focus:outline-none focus:border-sunbot-500" value={customItem.price} onChange={e => setCustomItem({...customItem, price: e.target.value})} />
+                                        </div>
+                                        <button onClick={handleAddCustomItem} className="w-full mt-2 bg-sunbot-600 text-white text-[11px] font-bold py-2 rounded hover:bg-sunbot-700 transition">
+                                            THÊM VÀO BÁO GIÁ
+                                        </button>
+                                    </div>
+
                                     <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase border-b border-gray-200 pb-1 flex justify-between">
                                         <span>Giỏ hàng báo giá</span>
                                         <span className="text-sunbot-600 font-bold">{cart.length} món</span>
                                     </label>
-                                    <div className="flex-1 overflow-y-auto mb-2 space-y-2 min-h-[150px]">
+                                    <div className="flex-1 overflow-y-auto mb-2 space-y-2 min-h-[120px]">
                                         {cart.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                            <div className="flex flex-col items-center justify-center h-full text-gray-400 mt-4">
                                                 <i className="fa-solid fa-cart-arrow-down text-2xl mb-2 opacity-30"></i>
-                                                <p className="text-[11px] italic">Bấm [+] ở trên để thêm vật tư</p>
+                                                <p className="text-[11px] italic">Bấm [+] hoặc Nhập thêm vật tư</p>
                                             </div>
                                         ) : 
                                             cart.map(c => (
@@ -428,7 +521,7 @@
                         <div className="a4-container">
                             <div id="quote-document">
                                 
-                                {/* HEADER CHUNG */}
+                                {/* HEADER CHUNG CÓ HỖ TRỢ UPLOAD LOGO */}
                                 <div className="flex justify-between items-start mb-6 border-b-[2px] border-sunbot-600 pb-3">
                                     <div>
                                         <h3 className="font-bold text-[14px] text-sunbot-700 uppercase tracking-wide">Công ty Cổ Phần Công Nghệ Giáo Dục Kiro VN</h3>
@@ -439,10 +532,15 @@
                                         </div>
                                     </div>
                                     <div className="text-right flex flex-col items-end">
-                                        <div className="flex items-center space-x-1.5 bg-sunbot-50 px-2.5 py-1 rounded border border-sunbot-100 mb-1.5">
-                                            <i className="fa-solid fa-robot text-sunbot-600 text-lg"></i>
-                                            <span className="font-extrabold text-[16px] text-sunbot-600 tracking-wider">SUNBOT</span>
-                                        </div>
+                                        {/* Hiển thị Logo nếu có, nếu không hiển thị icon SUNBOT mặc định */}
+                                        {logoUrl ? (
+                                            <img src={logoUrl} alt="Company Logo" className="max-h-[36px] max-w-[180px] object-contain mb-1.5" />
+                                        ) : (
+                                            <div className="flex items-center space-x-1.5 bg-sunbot-50 px-2.5 py-1 rounded border border-sunbot-100 mb-1.5">
+                                                <i className="fa-solid fa-robot text-sunbot-600 text-lg"></i>
+                                                <span className="font-extrabold text-[16px] text-sunbot-600 tracking-wider">SUNBOT</span>
+                                            </div>
+                                        )}
                                         <p className="text-[11px] italic text-gray-500">{dateStr}</p>
                                     </div>
                                 </div>
@@ -482,7 +580,7 @@
                                     
                                     <tbody className="text-gray-800 border-b border-gray-300">
                                         
-                                        {/* 1. RENDER CHẾ ĐỘ PACKAGE */}
+                                        {/* 1. RENDER CHẾ ĐỘ PACKAGE (CÓ CHIA PHASE) */}
                                         {quoteMode === 'package' && currentPkg.isPhased && (
                                             <>
                                                 <tr className="bg-sunbot-100 text-sunbot-800 font-bold avoid-break border-b border-sunbot-200">
@@ -521,7 +619,7 @@
                                             </>
                                         )}
 
-                                        {/* RENDER CHẾ ĐỘ PACKAGE - THẦU */}
+                                        {/* 1. RENDER CHẾ ĐỘ PACKAGE (GÓI THẦU - KHÔNG CHIA PHASE) */}
                                         {quoteMode === 'package' && !currentPkg.isPhased && currentPkg.items.map((item, idx) => {
                                             if (!item.qty) {
                                                 return (
@@ -573,7 +671,7 @@
                                     </tbody>
                                 </table>
 
-                                {/* ĐIỀU KHOẢN */}
+                                {/* ĐIỀU KHOẢN (ĐỘNG THEO MODE) */}
                                 <div className="mb-10 text-[11px] leading-relaxed text-gray-600 border border-gray-200 p-3.5 rounded bg-gray-50 avoid-break-block">
                                     <h4 className="font-bold text-gray-800 mb-1.5 uppercase text-[11px] flex items-center">
                                         <i className="fa-solid fa-shield-halved text-sunbot-600 mr-1.5"></i> Điều khoản & Chính sách
@@ -582,7 +680,7 @@
                                         <li>Báo giá chưa bao gồm thuế VAT và chi phí vận chuyển ngoài khu vực quy định.</li>
                                         {quoteMode === 'retail' ? (
                                             <>
-                                            <li><strong className="text-gray-700">Chính sách sửa chữa:</strong> Đối với linh kiện sửa chữa, robot sẽ được kỹ thuật viên tiếp nhận, kiểm tra lỗi và trả lại trong vòng 07-10 ngày làm việc.</li>
+                                            <li><strong className="text-gray-700">Chính sách sửa chữa:</strong> Đối với linh kiện sửa chữa, thiết bị sẽ được kỹ thuật viên tiếp nhận, kiểm tra lỗi và trả lại trong vòng 07-10 ngày làm việc.</li>
                                             <li><strong className="text-gray-700">Thanh toán:</strong> Thanh toán 100% giá trị đơn hàng trước khi giao hàng hoặc theo thỏa thuận hợp đồng đã ký kết.</li>
                                             </>
                                         ) : (
@@ -595,16 +693,12 @@
                                     </ul>
                                 </div>
 
-                                {/* CHỮ KÝ */}
-                                <div className="flex justify-between mt-8 text-center pb-8 avoid-break-block">
-                                    <div className="w-1/2">
-                                        <p className="font-bold text-gray-900 mb-20 uppercase text-[12px]">Đại diện Khách Hàng</p>
-                                        <p className="text-[11px] italic text-gray-500">(Ký và ghi rõ họ tên)</p>
-                                    </div>
-                                    <div className="w-1/2">
+                                {/* CHỮ KÝ - CĂN PHẢI (XÓA CHỮ KÝ KHÁCH HÀNG) */}
+                                <div className="flex justify-end mt-8 text-center pb-8 avoid-break-block">
+                                    <div className="w-1/3">
                                         <p className="font-bold text-gray-900 mb-20 uppercase text-[12px]">Đại diện Kiro Việt Nam</p>
                                         <p className="font-bold text-sunbot-600 uppercase tracking-wide text-[14px]">{quoterName}</p>
-                                        <p className="text-[11px] text-gray-500 mt-0.5">Chuyên viên Tư vấn Phụ trách</p>
+                                        <p className="text-[11px] text-gray-500 mt-0.5">Chuyên viên Phụ trách</p>
                                     </div>
                                 </div>
                                 
