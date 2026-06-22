@@ -10,7 +10,7 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -95,7 +95,7 @@
 <body class="antialiased">
     <div id="root"></div>
 
-    <script type="text/babel">
+    <script type="text/babel" data-presets="env" data-plugins="transform-react-jsx">
         // ==========================================
         // DATA 1: BÁO GIÁ TRỌN GÓI (PACKAGES)
         // ==========================================
@@ -111,11 +111,13 @@
                     { stt: '5', name: 'Gói Đồng hành và Đảm bảo vận hành (12 tháng)', unit: 'Gói', qty: 1, price: 13600000, total: 13600000, note: 'Hỗ trợ chuyên môn' },
                     { stt: '6', name: 'Bộ nhận diện lớp học theo chuẩn Sunbot', unit: 'Bộ', qty: 1, price: 5000000, total: 5000000, note: 'Trang trí không gian' }
                 ],
-                phase2Name: "B. DUY TRÌ & VẬN HÀNH (NĂM 2 VÀ NĂM 3)", phase2Total: 30000000,
+                phase2Name: "B. DUY TRÌ & VẬN HÀNH (NĂM 2 VÀ NĂM 3)", phase2Total: 54000000,
                 phase2Items: [
-                    { stt: '7', name: 'Gia hạn Bản quyền Phần mềm Lập trình (Năm 2)', unit: 'Năm', qty: 1, price: 15000000, total: 15000000, note: 'Dự kiến thu năm 2' },
-                    { stt: '8', name: 'Gia hạn Bản quyền Phần mềm Lập trình (Năm 3)', unit: 'Năm', qty: 1, price: 15000000, total: 15000000, note: 'Dự kiến thu năm 3' }
-                ], total: 97100000
+                    { stt: '7', name: 'Quyền sử dụng tài khoản số Sunbot (giáo án và bài giảng số) (Năm 2)', unit: 'Năm', qty: 1, price: 15000000, total: 15000000, note: 'Duy trì tài khoản số' },
+                    { stt: '8', name: 'Gói đảm bảo vận hành Sunbot (Năm 2)', unit: 'Năm', qty: 1, price: 12000000, total: 12000000, note: 'Duy trì vận hành' },
+                    { stt: '9', name: 'Quyền sử dụng tài khoản số Sunbot (giáo án và bài giảng số) (Năm 3)', unit: 'Năm', qty: 1, price: 15000000, total: 15000000, note: 'Duy trì tài khoản số' },
+                    { stt: '10', name: 'Gói đảm bảo vận hành Sunbot (Năm 3)', unit: 'Năm', qty: 1, price: 12000000, total: 12000000, note: 'Duy trì vận hành' }
+                ], total: 121100000
             },
             standard: {
                 id: 'standard', name: 'Gói Chuẩn (STANDARD)', title: 'GÓI TRIỂN KHAI CHUẨN (STANDARD)\nCHƯƠNG TRÌNH GIÁO DỤC SUNBOT', isPhased: true,
@@ -130,10 +132,12 @@
                 ],
                 phase2Name: "B. DUY TRÌ BẢN QUYỀN & HỌC LIỆU (NĂM 2 VÀ NĂM 3)", phase2Total: 96000000,
                 phase2Items: [
-                    { stt: '7', name: 'Phí Bản quyền & Đồng hành vận hành (Năm 2)', unit: 'Năm', qty: 1, price: 33000000, total: 33000000, note: 'Dự kiến năm 2' },
-                    { stt: '8', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 2)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' },
-                    { stt: '9', name: 'Phí Bản quyền & Đồng hành vận hành (Năm 3)', unit: 'Năm', qty: 1, price: 33000000, total: 33000000, note: 'Dự kiến năm 3' },
-                    { stt: '10', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 3)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' }
+                    { stt: '7', name: 'Quyền sử dụng tài khoản số Sunbot (giáo án và bài giảng số) (Năm 2)', unit: 'Năm', qty: 1, price: 21000000, total: 21000000, note: 'Duy trì tài khoản số' },
+                    { stt: '8', name: 'Gói đảm bảo vận hành Sunbot (Năm 2)', unit: 'Năm', qty: 1, price: 12000000, total: 12000000, note: 'Duy trì vận hành' },
+                    { stt: '9', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 2)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' },
+                    { stt: '10', name: 'Quyền sử dụng tài khoản số Sunbot (giáo án và bài giảng số) (Năm 3)', unit: 'Năm', qty: 1, price: 21000000, total: 21000000, note: 'Duy trì tài khoản số' },
+                    { stt: '11', name: 'Gói đảm bảo vận hành Sunbot (Năm 3)', unit: 'Năm', qty: 1, price: 12000000, total: 12000000, note: 'Duy trì vận hành' },
+                    { stt: '12', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 3)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' }
                 ], total: 194600000
             },
             premium: {
@@ -150,10 +154,14 @@
                 ],
                 phase2Name: "B. DUY TRÌ BẢN QUYỀN & HỌC LIỆU (NĂM 2 VÀ NĂM 3)", phase2Total: 122000000,
                 phase2Items: [
-                    { stt: '8', name: 'Phí Bản quyền, Đồng hành & Hỗ trợ Sự kiện (Năm 2)', unit: 'Gói', qty: 1, price: 46000000, total: 46000000, note: 'Dự kiến năm 2' },
-                    { stt: '9', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 2)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' },
-                    { stt: '10', name: 'Phí Bản quyền, Đồng hành & Hỗ trợ Sự kiện (Năm 3)', unit: 'Gói', qty: 1, price: 46000000, total: 46000000, note: 'Dự kiến năm 3' },
-                    { stt: '11', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 3)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' }
+                    { stt: '8', name: 'Quyền sử dụng tài khoản số Sunbot (giáo án và bài giảng số) (Năm 2)', unit: 'Năm', qty: 1, price: 21000000, total: 21000000, note: 'Duy trì tài khoản số' },
+                    { stt: '9', name: 'Gói đảm bảo vận hành Sunbot (Năm 2)', unit: 'Năm', qty: 1, price: 12000000, total: 12000000, note: 'Duy trì vận hành' },
+                    { stt: '10', name: 'Đồng hành chuyên môn & hỗ trợ sự kiện (Năm 2)', unit: 'Gói', qty: 1, price: 13000000, total: 13000000, note: 'Chuyên môn/sự kiện' },
+                    { stt: '11', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 2)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' },
+                    { stt: '12', name: 'Quyền sử dụng tài khoản số Sunbot (giáo án và bài giảng số) (Năm 3)', unit: 'Năm', qty: 1, price: 21000000, total: 21000000, note: 'Duy trì tài khoản số' },
+                    { stt: '13', name: 'Gói đảm bảo vận hành Sunbot (Năm 3)', unit: 'Năm', qty: 1, price: 12000000, total: 12000000, note: 'Duy trì vận hành' },
+                    { stt: '14', name: 'Đồng hành chuyên môn & hỗ trợ sự kiện (Năm 3)', unit: 'Gói', qty: 1, price: 13000000, total: 13000000, note: 'Chuyên môn/sự kiện' },
+                    { stt: '15', name: 'Bộ học cụ STEAM chuẩn (Vật tư tiêu hao Năm 3)', unit: 'Bộ', qty: 1, price: 15000000, total: 15000000, note: 'Bổ sung học cụ' }
                 ], total: 344300000
             },
             bidding: {
@@ -687,6 +695,7 @@
                                             <>
                                             <li>Chi phí lưu trú, di chuyển của chuyên gia đào tạo (nếu phát sinh ngoài hợp đồng) do nhà trường đài thọ.</li>
                                             <li><strong className="text-gray-700">Bảo hành:</strong> 1 đổi 1 hoặc sửa chữa theo tiêu chuẩn phần cứng; bảo trì liên tục hệ thống phần mềm.</li>
+                                            <li><strong className="text-gray-700">Duy trì từ năm thứ 4:</strong> Chi phí đảm bảo vận hành và quyền sử dụng tài khoản số (giáo án và bài giảng số) là <strong className="text-sunbot-600">12.000.000 ₫/năm</strong>.</li>
                                             </>
                                         )}
                                         <li>Báo giá có giá trị tham chiếu trong vòng <strong className="text-sunbot-600">30 ngày</strong> kể từ ngày phát hành.</li>
