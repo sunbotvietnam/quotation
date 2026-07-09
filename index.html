@@ -108,7 +108,7 @@
                     { stt: '2', name: 'Bản quyền Phần mềm Lập trình Level 1-9', unit: 'Năm', qty: 1, price: 15000000, total: 15000000, note: 'Bản quyền năm 1' },
                     { stt: '3', name: 'Đào tạo tập huấn giáo viên chuẩn (1 đợt)', unit: 'Khóa', qty: 1, price: 11000000, total: 11000000, note: 'Tối đa 20 nhân sự' },
                     { stt: '4', name: 'Sát hạch và cấp chứng nhận giáo viên', unit: 'Người', qty: 5, price: 500000, total: 2500000, note: 'Chứng nhận chuyên môn' },
-                    { stt: '5', name: 'Gói Đồng hành và Đảm bảo vận hành (12 tháng)', unit: 'Gói', qty: 1, price: 13600000, total: 13600000, note: 'Hỗ trợ chuyên môn' },
+                    { stt: '5', name: 'Gói Đồng hành và Đảm bảo vận hành (12 tháng)', unit: 'Gói', qty: 1, price: 13500000, total: 13500000, note: 'Hỗ trợ chuyên môn' },
                     { stt: '6', name: 'Bộ nhận diện lớp học theo chuẩn Sunbot', unit: 'Bộ', qty: 1, price: 5000000, total: 5000000, note: 'Trang trí không gian' }
                 ],
                 phase2Name: "B. DUY TRÌ & VẬN HÀNH (NĂM 2 VÀ NĂM 3)", phase2Total: 54000000,
@@ -259,6 +259,39 @@
         ];
 
         const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+        const lineTotal = (item) => {
+            const qty = Number(item.qty);
+            const price = Number(item.price);
+            if (Number.isFinite(qty) && Number.isFinite(price)) return qty * price;
+            return Number(item.total || 0);
+        };
+        const sumLines = (items = []) => items.reduce((sum, item) => sum + lineTotal(item), 0);
+        const getPackageTotals = (pkg) => {
+            if (!pkg) return { phase1: 0, phase2: 0, total: 0 };
+            if (!pkg.isPhased) {
+                const total = sumLines(pkg.items);
+                return { phase1: 0, phase2: 0, total };
+            }
+            const phase1 = sumLines(pkg.phase1Items);
+            const phase2 = sumLines(pkg.phase2Items);
+            return { phase1, phase2, total: phase1 + phase2 };
+        };
+        const auditPackageTotals = () => {
+            Object.values(packagesData).forEach((pkg) => {
+                const totals = getPackageTotals(pkg);
+                const declaredTotal = Number(pkg.total || 0);
+                if (declaredTotal && declaredTotal !== totals.total) {
+                    console.warn(`[Sunbot quotation] Tổng gói ${pkg.name} lệch: khai báo ${declaredTotal}, cộng dòng ${totals.total}`);
+                }
+                [...(pkg.phase1Items || []), ...(pkg.phase2Items || []), ...(pkg.items || [])].forEach((item) => {
+                    const computedLineTotal = lineTotal(item);
+                    if (Number(item.total || 0) !== computedLineTotal) {
+                        console.warn(`[Sunbot quotation] Thành tiền dòng ${pkg.name} / ${item.stt || item.name} lệch: khai báo ${item.total || 0}, SL x đơn giá ${computedLineTotal}`);
+                    }
+                });
+            });
+        };
+        auditPackageTotals();
 
         const InputField = ({ label, value, onChange, type = "text" }) => (
             <div className="mb-3">
@@ -378,6 +411,7 @@
             }
 
             const currentPkg = packagesData[selectedPackage];
+            const currentPkgTotals = getPackageTotals(currentPkg);
             const dateObj = new Date(quoteDate);
             const dateStr = `Ngày ${dateObj.getDate().toString().padStart(2, '0')} tháng ${((dateObj.getMonth() + 1).toString().padStart(2, '0'))} năm ${dateObj.getFullYear()}`;
 
@@ -593,7 +627,7 @@
                                             <>
                                                 <tr className="bg-sunbot-100 text-sunbot-800 font-bold avoid-break border-b border-sunbot-200">
                                                     <td colSpan="5" className="p-2 text-left uppercase border-x border-gray-300">{currentPkg.phase1Name}</td>
-                                                    <td className="p-2 text-right text-[13px] border-x border-gray-300">{formatCurrency(currentPkg.phase1Total)}</td>
+                                                    <td className="p-2 text-right text-[13px] border-x border-gray-300">{formatCurrency(currentPkgTotals.phase1)}</td>
                                                     <td className="p-2 text-center text-[10.5px] font-normal italic border-x border-gray-300 text-gray-600">Đầu tư ban đầu</td>
                                                 </tr>
                                                 {currentPkg.phase1Items.map((item, idx) => (
@@ -603,14 +637,14 @@
                                                         <td className="p-2.5 text-center text-gray-500 border-x border-gray-200">{item.unit}</td>
                                                         <td className="p-2.5 text-center border-x border-gray-200">{item.qty}</td>
                                                         <td className="p-2.5 text-right font-mono text-gray-600 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.price)}</td>
-                                                        <td className="p-2.5 text-right font-mono font-semibold text-gray-800 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.total)}</td>
+                                                        <td className="p-2.5 text-right font-mono font-semibold text-gray-800 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(lineTotal(item))}</td>
                                                         <td className="p-2 text-center text-[10.5px] text-gray-500 italic leading-tight border-x border-gray-200">{item.note}</td>
                                                     </tr>
                                                 ))}
 
                                                 <tr className="bg-gray-100 text-gray-700 font-bold avoid-break border-y-2 border-gray-300">
                                                     <td colSpan="5" className="p-2 text-left uppercase border-x border-gray-300">{currentPkg.phase2Name}</td>
-                                                    <td className="p-2 text-right text-[13px] border-x border-gray-300">{formatCurrency(currentPkg.phase2Total)}</td>
+                                                    <td className="p-2 text-right text-[13px] border-x border-gray-300">{formatCurrency(currentPkgTotals.phase2)}</td>
                                                     <td className="p-2 text-center text-[10.5px] font-normal italic border-x border-gray-300 text-gray-500">Kế hoạch tài chính</td>
                                                 </tr>
                                                 {currentPkg.phase2Items.map((item, idx) => (
@@ -620,7 +654,7 @@
                                                         <td className="p-2.5 text-center text-gray-400 border-x border-gray-200">{item.unit}</td>
                                                         <td className="p-2.5 text-center border-x border-gray-200 text-gray-500">{item.qty}</td>
                                                         <td className="p-2.5 text-right font-mono text-gray-400 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.price)}</td>
-                                                        <td className="p-2.5 text-right font-mono font-medium text-gray-600 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.total)}</td>
+                                                        <td className="p-2.5 text-right font-mono font-medium text-gray-600 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(lineTotal(item))}</td>
                                                         <td className="p-2 text-center text-[10.5px] text-gray-400 italic leading-tight border-x border-gray-200">{item.note}</td>
                                                     </tr>
                                                 ))}
@@ -643,7 +677,7 @@
                                                     <td className="p-2.5 text-center text-gray-500 border-x border-gray-200">{item.unit}</td>
                                                     <td className="p-2.5 text-center border-x border-gray-200">{item.qty}</td>
                                                     <td className="p-2.5 text-right font-mono text-gray-600 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.price)}</td>
-                                                    <td className="p-2.5 text-right font-mono font-semibold text-gray-900 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(item.total)}</td>
+                                                    <td className="p-2.5 text-right font-mono font-semibold text-gray-900 border-x border-gray-200">{new Intl.NumberFormat('vi-VN').format(lineTotal(item))}</td>
                                                     <td className="p-2 text-center text-[10.5px] text-gray-500 italic leading-tight border-x border-gray-200">{item.note}</td>
                                                 </tr>
                                             );
@@ -673,7 +707,7 @@
                                                 {quoteMode === 'package' ? "Tổng Mức Đầu Tư Toàn Dự Án (3 Năm)" : "Tổng Giá Trị Thanh Toán (VNĐ)"}
                                             </td>
                                             <td colSpan="2" className="p-3 text-right text-sunbot-600 text-[15px] border-x border-gray-300 tracking-wide">
-                                                {formatCurrency(quoteMode === 'package' ? currentPkg.total : retailTotal)}
+                                                {formatCurrency(quoteMode === 'package' ? currentPkgTotals.total : retailTotal)}
                                             </td>
                                         </tr>
                                     </tbody>
