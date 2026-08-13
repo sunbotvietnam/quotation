@@ -65,29 +65,25 @@
             body { 
                 background: white !important; 
                 margin: 0 !important; 
-                padding: 0 !important; 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
-            
             .no-print { display: none !important; }
-            
-            .preview-wrapper { 
-                padding: 0 !important; 
+            .preview-wrapper {
+                padding: 0 !important;
                 margin: 0 !important;
-                width: 100% !important; 
-                display: block !important; 
+                width: 100% !important;
+                display: block !important;
                 overflow: visible !important;
             }
-            
-            .a4-container { 
-                width: 100% !important; 
-                max-width: 100% !important; 
-                padding: 0 !important; 
-                margin: 0 !important; 
-                box-shadow: none !important; 
+            .a4-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
             }
-            
             #quote-document { width: 100% !important; }
         }
     </style>
@@ -211,6 +207,10 @@
             { id: 'bd7', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 7', unit: 'Bộ', price: 210000 },
             { id: 'bd8', category: 'Học cụ (Bản đồ)', name: 'Bản đồ giấy Level 8', unit: 'Bộ', price: 210000 },
 
+            // Sản phẩm & Dịch vụ mới
+            { id: 'lp-obstacle-kit', category: 'Học cụ (Lập trình tư duy)', name: 'Bộ chướng ngại vật dành cho Lập trình tư duy cùng Sunbot', unit: 'Bộ', price: 3000000 },
+            { id: 'robot-rental', category: 'Dịch vụ Robot', name: 'Dịch vụ cho thuê Robot Sunbot (tối thiểu 3 tháng/con)', unit: 'Robot/tháng', price: 300000 },
+
             // Sửa chữa Robot
             { id: 'sc1', category: 'Linh kiện Robot', name: 'Vỏ nhựa trên', unit: 'Cái', price: 500000 },
             { id: 'sc2', category: 'Linh kiện Robot', name: 'Đế nhựa dưới', unit: 'Cái', price: 400000 },
@@ -270,24 +270,15 @@
         function App() {
             const [isAuthenticated, setIsAuthenticated] = React.useState(false);
             const [password, setPassword] = React.useState('');
-            
-            const [quoteMode, setQuoteMode] = React.useState('package'); 
-            
-            // Default tên theo yêu cầu mới
+            const [quoteMode, setQuoteMode] = React.useState('package');
             const [customerName, setCustomerName] = React.useState('Trường mầm non ABC');
             const [quoterName, setQuoterName] = React.useState('Nguyễn Thu A');
             const [quoteDate, setQuoteDate] = React.useState(new Date().toISOString().split('T')[0]);
-            
-            // State chứa đường dẫn logo được upload
-            const [logoUrl, setLogoUrl] = React.useState(null); 
-            
+            const [logoUrl, setLogoUrl] = React.useState(null);
             const [selectedPackage, setSelectedPackage] = React.useState('bidding');
-            
             const [searchQuery, setSearchQuery] = React.useState('');
             const [filterCategory, setFilterCategory] = React.useState('All');
             const [cart, setCart] = React.useState([]);
-
-            // Trạng thái Form Thêm mới Tùy chỉnh (Custom Item)
             const [customItem, setCustomItem] = React.useState({ name: '', unit: 'Cái', price: '' });
 
             const handleLogin = (e) => {
@@ -296,14 +287,11 @@
                 else alert('Sai mật khẩu!');
             };
 
-            // Hàm xử lý tải file Logo lên
             const handleLogoUpload = (e) => {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onloadend = () => {
-                        setLogoUrl(reader.result);
-                    };
+                    reader.onloadend = () => { setLogoUrl(reader.result); };
                     reader.readAsDataURL(file);
                 }
             };
@@ -324,7 +312,6 @@
                 });
             };
 
-            // Hàm add hàng hóa không có sẵn trong danh mục
             const handleAddCustomItem = () => {
                 if (!customItem.name || !customItem.price) {
                     alert("Vui lòng nhập tên hàng hóa và đơn giá!");
@@ -338,28 +325,25 @@
                     price: parseInt(customItem.price)
                 };
                 addToCart(newItem);
-                setCustomItem({ name: '', unit: 'Cái', price: '' }); // Reset form
+                setCustomItem({ name: '', unit: 'Cái', price: '' });
             };
 
             const updateCartQty = (id, newQty) => {
                 if (newQty < 1) return;
                 setCart(prev => prev.map(i => i.item.id === id ? { ...i, qty: newQty } : i));
             };
-            
             const updateCartNote = (id, note) => {
                 setCart(prev => prev.map(i => i.item.id === id ? { ...i, note } : i));
             };
-
             const removeFromCart = (id) => {
                 setCart(prev => prev.filter(i => i.item.id !== id));
             };
 
             const retailCategories = ['All', ...new Set(retailInventory.map(i => i.category))];
-            const filteredInventory = retailInventory.filter(i => 
+            const filteredInventory = retailInventory.filter(i =>
                 (filterCategory === 'All' || i.category === filterCategory) &&
                 i.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
-
             const retailTotal = cart.reduce((sum, cartItem) => sum + (cartItem.item.price * cartItem.qty), 0);
 
             if (!isAuthenticated) {
@@ -383,10 +367,7 @@
 
             return (
                 <div className="min-h-screen flex flex-col md:flex-row">
-                    
-                    {/* BẢNG ĐIỀU KHIỂN BÊN TRÁI (ẨN KHI IN) */}
                     <div className="w-full md:w-[380px] bg-white border-r border-gray-200 shadow-xl z-10 flex flex-col no-print h-screen sticky top-0">
-                        
                         <div className="flex bg-gray-100 p-1.5 border-b border-gray-200">
                             <button onClick={() => setQuoteMode('package')} className={`flex-1 py-2 text-[12px] font-bold rounded-md transition-all ${quoteMode === 'package' ? 'bg-white text-sunbot-700 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>
                                 BÁO GIÁ DỰ ÁN
@@ -400,19 +381,15 @@
                             <h2 className="font-bold text-[13px] text-gray-800 border-b border-gray-200 pb-1.5 mb-3 uppercase">Thông tin chung</h2>
                             <InputField label="Tên Khách Hàng / Đối Tác" value={customerName} onChange={setCustomerName} />
                             <InputField label="Chuyên viên Phụ trách" value={quoterName} onChange={setQuoterName} />
-                            
                             <div className="flex space-x-2 mb-3">
                                 <div className="flex-1"><InputField label="Ngày Báo Giá" type="date" value={quoteDate} onChange={setQuoteDate} /></div>
                             </div>
-                            
-                            {/* Nút Upload Logo */}
                             <div className="mb-4 bg-gray-50 p-2.5 rounded border border-gray-200">
                                 <label className="block text-[12px] font-semibold text-gray-700 mb-1.5"><i className="fa-solid fa-image mr-1"></i> Tải Logo Công ty (Tùy chọn)</label>
                                 <input type="file" accept="image/*" onChange={handleLogoUpload} className="text-[11px] text-gray-500 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-[11px] file:font-semibold file:bg-sunbot-100 file:text-sunbot-700 hover:file:bg-sunbot-200 cursor-pointer w-full" />
                                 {logoUrl && <button onClick={() => setLogoUrl(null)} className="mt-2 text-[11px] text-red-500 hover:underline"><i className="fa-solid fa-trash-can mr-1"></i> Xóa logo hiện tại</button>}
                             </div>
 
-                            {/* CHẾ ĐỘ PACKAGE */}
                             {quoteMode === 'package' && (
                                 <div className="mt-2">
                                     <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase border-b pb-1">Cấu hình hệ thống</label>
@@ -427,7 +404,6 @@
                                 </div>
                             )}
 
-                            {/* CHẾ ĐỘ RETAIL CART */}
                             {quoteMode === 'retail' && (
                                 <div className="mt-2 flex flex-col flex-1 h-full">
                                     <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase flex items-center justify-between border-b border-gray-200 pb-1">
@@ -440,8 +416,6 @@
                                         </select>
                                         <input type="text" placeholder="Gõ tên tìm kiếm..." className="border border-gray-300 rounded px-2 py-1.5 text-[12px] flex-1 focus:outline-none focus:border-sunbot-500" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
                                     </div>
-                                    
-                                    {/* Bảng chứa Kho hàng có sẵn */}
                                     <div className="border border-gray-200 rounded-md bg-gray-50 h-32 overflow-y-auto p-1 mb-3 shadow-inner">
                                         {filteredInventory.length === 0 && <p className="text-center text-[11px] text-gray-400 mt-10">Không tìm thấy vật tư.</p>}
                                         {filteredInventory.map(item => (
@@ -456,8 +430,6 @@
                                             </div>
                                         ))}
                                     </div>
-
-                                    {/* FORM THÊM HẠNG MỤC TÙY CHỈNH */}
                                     <div className="mb-4 bg-orange-50 border border-sunbot-200 p-2.5 rounded shadow-sm">
                                         <p className="text-[11px] font-bold text-sunbot-800 mb-2 uppercase"><i className="fa-solid fa-pen-to-square mr-1"></i>Thêm Món Tùy Chỉnh</p>
                                         <input type="text" placeholder="Tên hàng hóa/phụ kiện..." className="w-full px-2 py-1.5 border border-gray-300 rounded text-[12px] mb-2 focus:outline-none focus:border-sunbot-500" value={customItem.name} onChange={e => setCustomItem({...customItem, name: e.target.value})} />
@@ -469,7 +441,6 @@
                                             THÊM VÀO BÁO GIÁ
                                         </button>
                                     </div>
-
                                     <label className="block text-[13px] font-semibold text-gray-700 mb-2 uppercase border-b border-gray-200 pb-1 flex justify-between">
                                         <span>Giỏ hàng báo giá</span>
                                         <span className="text-sunbot-600 font-bold">{cart.length} món</span>
@@ -480,28 +451,26 @@
                                                 <i className="fa-solid fa-cart-arrow-down text-2xl mb-2 opacity-30"></i>
                                                 <p className="text-[11px] italic">Bấm [+] hoặc Nhập thêm vật tư</p>
                                             </div>
-                                        ) : 
-                                            cart.map(c => (
-                                                <div key={c.item.id} className="bg-white border border-gray-200 rounded p-2.5 shadow-sm relative group">
-                                                    <div className="flex justify-between items-start mb-1.5">
-                                                        <p className="text-[12px] font-bold text-gray-800 pr-5 leading-tight">{c.item.name}</p>
-                                                        <button onClick={() => removeFromCart(c.item.id)} className="text-gray-300 hover:text-red-500 absolute top-2 right-2">
-                                                            <i className="fa-solid fa-xmark"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div className="flex items-center space-x-2">
-                                                        <div className="flex items-center border border-gray-300 rounded bg-gray-50">
-                                                            <button onClick={() => updateCartQty(c.item.id, c.qty - 1)} className="px-2 py-0.5 text-gray-500 hover:text-black">-</button>
-                                                            <input type="number" min="1" value={c.qty} onChange={(e) => updateCartQty(c.item.id, parseInt(e.target.value) || 1)} className="w-8 bg-transparent text-center text-[11px] font-bold focus:outline-none" />
-                                                            <button onClick={() => updateCartQty(c.item.id, c.qty + 1)} className="px-2 py-0.5 text-gray-500 hover:text-black">+</button>
-                                                        </div>
-                                                        <span className="text-[10.5px] text-gray-500 italic">x {formatCurrency(c.item.price)}</span>
-                                                        <span className="text-[12px] font-bold text-sunbot-700 ml-auto">{formatCurrency(c.item.price * c.qty)}</span>
-                                                    </div>
-                                                    <input type="text" placeholder="Ghi chú thêm (Tùy chọn)..." value={c.note} onChange={(e) => updateCartNote(c.item.id, e.target.value)} className="w-full mt-2 border-b border-dashed border-gray-300 text-[10.5px] italic focus:outline-none focus:border-sunbot-400 px-1 py-0.5 bg-transparent text-gray-600" />
+                                        ) : cart.map(c => (
+                                            <div key={c.item.id} className="bg-white border border-gray-200 rounded p-2.5 shadow-sm relative group">
+                                                <div className="flex justify-between items-start mb-1.5">
+                                                    <p className="text-[12px] font-bold text-gray-800 pr-5 leading-tight">{c.item.name}</p>
+                                                    <button onClick={() => removeFromCart(c.item.id)} className="text-gray-300 hover:text-red-500 absolute top-2 right-2">
+                                                        <i className="fa-solid fa-xmark"></i>
+                                                    </button>
                                                 </div>
-                                            ))
-                                        }
+                                                <div className="flex items-center space-x-2">
+                                                    <div className="flex items-center border border-gray-300 rounded bg-gray-50">
+                                                        <button onClick={() => updateCartQty(c.item.id, c.qty - 1)} className="px-2 py-0.5 text-gray-500 hover:text-black">-</button>
+                                                        <input type="number" min="1" value={c.qty} onChange={(e) => updateCartQty(c.item.id, parseInt(e.target.value) || 1)} className="w-8 bg-transparent text-center text-[11px] font-bold focus:outline-none" />
+                                                        <button onClick={() => updateCartQty(c.item.id, c.qty + 1)} className="px-2 py-0.5 text-gray-500 hover:text-black">+</button>
+                                                    </div>
+                                                    <span className="text-[10.5px] text-gray-500 italic">x {formatCurrency(c.item.price)}</span>
+                                                    <span className="text-[12px] font-bold text-sunbot-700 ml-auto">{formatCurrency(c.item.price * c.qty)}</span>
+                                                </div>
+                                                <input type="text" placeholder="Ghi chú thêm (Tùy chọn)..." value={c.note} onChange={(e) => updateCartNote(c.item.id, e.target.value)} className="w-full mt-2 border-b border-dashed border-gray-300 text-[10.5px] italic focus:outline-none focus:border-sunbot-400 px-1 py-0.5 bg-transparent text-gray-600" />
+                                            </div>
+                                        ))}
                                     </div>
                                     {cart.length > 0 && (
                                         <div className="mt-2 pt-2 border-t border-gray-200 flex justify-between items-center bg-sunbot-50 p-2 rounded">
@@ -514,22 +483,16 @@
                         </div>
 
                         <div className="p-5 border-t border-gray-200 bg-gray-50 mt-auto">
-                            <button 
-                                onClick={handleNativePrint} 
-                                className="w-full flex items-center justify-center space-x-2 bg-sunbot-600 text-white font-bold py-3.5 rounded-lg shadow-md hover:bg-sunbot-700 hover:shadow-lg transition-all"
-                            >
+                            <button onClick={handleNativePrint} className="w-full flex items-center justify-center space-x-2 bg-sunbot-600 text-white font-bold py-3.5 rounded-lg shadow-md hover:bg-sunbot-700 hover:shadow-lg transition-all">
                                 <i className="fa-solid fa-print"></i>
                                 <span className="text-[14px]">In Báo Giá A4 / Xuất PDF</span>
                             </button>
                         </div>
                     </div>
 
-                    {/* VÙNG KHUNG A4 XEM TRƯỚC */}
                     <div className="preview-wrapper flex-1">
                         <div className="a4-container">
                             <div id="quote-document">
-                                
-                                {/* HEADER CHUNG CÓ HỖ TRỢ UPLOAD LOGO */}
                                 <div className="flex justify-between items-start mb-6 border-b-[2px] border-sunbot-600 pb-3">
                                     <div>
                                         <h3 className="font-bold text-[14px] text-sunbot-700 uppercase tracking-wide">Công ty Cổ Phần Công Nghệ Giáo Dục Kiro VN</h3>
@@ -540,7 +503,6 @@
                                         </div>
                                     </div>
                                     <div className="text-right flex flex-col items-end">
-                                        {/* Hiển thị Logo nếu có, nếu không hiển thị icon SUNBOT mặc định */}
                                         {logoUrl ? (
                                             <img src={logoUrl} alt="Company Logo" className="max-h-[36px] max-w-[180px] object-contain mb-1.5" />
                                         ) : (
@@ -553,7 +515,6 @@
                                     </div>
                                 </div>
 
-                                {/* TIÊU ĐỀ */}
                                 <div className="text-center mb-6 px-4">
                                     <h1 className="text-[16px] font-bold uppercase text-gray-900 whitespace-pre-line leading-relaxed">
                                         {quoteMode === 'package' ? currentPkg.title : "BẢNG BÁO GIÁ HỌC CỤ, VẬT TƯ\nVÀ DỊCH VỤ SỬA CHỮA SUNBOT"}
@@ -561,18 +522,16 @@
                                     <div className="w-12 h-1 bg-sunbot-500 mx-auto mt-3 rounded-full"></div>
                                 </div>
 
-                                {/* LỜI MỞ ĐẦU */}
                                 <div className="mb-5 text-justify text-[12px] text-gray-800 leading-[1.6]">
                                     <p className="mb-1.5"><strong>Kính gửi: </strong> <span className="font-bold text-sunbot-700 uppercase">{customerName}</span></p>
                                     <p>
-                                        {quoteMode === 'package' 
+                                        {quoteMode === 'package'
                                             ? `Chúng tôi xin trân trọng gửi tới Quý Đơn vị bảng báo giá chi tiết cấu hình ${currentPkg.name} thuộc chương trình Lập trình tư duy và STEAM cùng Sunbot. Lộ trình đầu tư được phân bổ rõ ràng nhằm giúp nhà trường tối ưu dòng tiền, vận hành hiệu quả và bền vững.`
                                             : "Chúng tôi xin trân trọng gửi tới Quý Đơn vị bảng báo giá chi tiết danh mục cung cấp học cụ lẻ, vật tư tiêu hao STEAM và dịch vụ bảo hành/sửa chữa theo yêu cầu như sau:"
                                         }
                                     </p>
                                 </div>
 
-                                {/* BẢNG GIÁ */}
                                 <table className="table-lock mb-6 text-[12px]">
                                     <thead>
                                         <tr className="bg-sunbot-600 text-white border-y-2 border-sunbot-800">
@@ -585,10 +544,7 @@
                                             <th className="p-2 text-center border-x border-sunbot-700 font-bold text-[11px]" style={{ width: '18%' }}>Ghi chú</th>
                                         </tr>
                                     </thead>
-                                    
                                     <tbody className="text-gray-800 border-b border-gray-300">
-                                        
-                                        {/* 1. RENDER CHẾ ĐỘ PACKAGE (CÓ CHIA PHASE) */}
                                         {quoteMode === 'package' && currentPkg.isPhased && (
                                             <>
                                                 <tr className="bg-sunbot-100 text-sunbot-800 font-bold avoid-break border-b border-sunbot-200">
@@ -607,7 +563,6 @@
                                                         <td className="p-2 text-center text-[10.5px] text-gray-500 italic leading-tight border-x border-gray-200">{item.note}</td>
                                                     </tr>
                                                 ))}
-
                                                 <tr className="bg-gray-100 text-gray-700 font-bold avoid-break border-y-2 border-gray-300">
                                                     <td colSpan="5" className="p-2 text-left uppercase border-x border-gray-300">{currentPkg.phase2Name}</td>
                                                     <td className="p-2 text-right text-[13px] border-x border-gray-300">{formatCurrency(currentPkg.phase2Total)}</td>
@@ -627,7 +582,6 @@
                                             </>
                                         )}
 
-                                        {/* 1. RENDER CHẾ ĐỘ PACKAGE (GÓI THẦU - KHÔNG CHIA PHASE) */}
                                         {quoteMode === 'package' && !currentPkg.isPhased && currentPkg.items.map((item, idx) => {
                                             if (!item.qty) {
                                                 return (
@@ -649,7 +603,6 @@
                                             );
                                         })}
 
-                                        {/* 2. RENDER CHẾ ĐỘ BÁN LẺ (RETAIL CART) */}
                                         {quoteMode === 'retail' && cart.length === 0 ? (
                                             <tr className="avoid-break"><td colSpan="7" className="p-12 text-center text-gray-400 italic">Vui lòng thêm vật tư vào bảng báo giá từ cột menu bên trái.</td></tr>
                                         ) : null}
@@ -667,7 +620,6 @@
                                             </tr>
                                         ))}
 
-                                        {/* TỔNG CỘNG CHUNG */}
                                         <tr className="bg-sunbot-50 font-extrabold text-gray-900 text-[13px] avoid-break border-y-2 border-sunbot-300">
                                             <td colSpan="5" className="p-3 text-right uppercase text-sunbot-800 border-x border-gray-300">
                                                 {quoteMode === 'package' ? "Tổng Mức Đầu Tư Toàn Dự Án (3 Năm)" : "Tổng Giá Trị Thanh Toán (VNĐ)"}
@@ -679,7 +631,6 @@
                                     </tbody>
                                 </table>
 
-                                {/* ĐIỀU KHOẢN (ĐỘNG THEO MODE) */}
                                 <div className="mb-10 text-[11px] leading-relaxed text-gray-600 border border-gray-200 p-3.5 rounded bg-gray-50 avoid-break-block">
                                     <h4 className="font-bold text-gray-800 mb-1.5 uppercase text-[11px] flex items-center">
                                         <i className="fa-solid fa-shield-halved text-sunbot-600 mr-1.5"></i> Điều khoản & Chính sách
@@ -702,7 +653,6 @@
                                     </ul>
                                 </div>
 
-                                {/* CHỮ KÝ - CĂN PHẢI (XÓA CHỮ KÝ KHÁCH HÀNG) */}
                                 <div className="flex justify-end mt-8 text-center pb-8 avoid-break-block">
                                     <div className="w-1/3">
                                         <p className="font-bold text-gray-900 mb-20 uppercase text-[12px]">Đại diện Kiro Việt Nam</p>
@@ -710,7 +660,6 @@
                                         <p className="text-[11px] text-gray-500 mt-0.5">Chuyên viên Phụ trách</p>
                                     </div>
                                 </div>
-                                
                             </div>
                         </div>
                     </div>
