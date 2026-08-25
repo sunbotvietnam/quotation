@@ -1,0 +1,48 @@
+/* Header refinement: keep the full legal company name on one clean line. */
+.quote-brand-block{flex:1 1 auto;min-width:0;gap:12px}
+.quote-logo{width:40mm;max-width:152px;flex:0 0 auto}
+.quote-brand-copy{flex:1 1 auto;max-width:none;min-width:0;padding-left:11px}
+.quote-company{font-size:8.7px;line-height:1.25;letter-spacing:.012em;white-space:nowrap}
+.quote-tagline{font-size:7.7px;letter-spacing:.07em;white-space:nowrap}
+.quote-meta{min-width:145px;flex:0 0 145px}
+.quote-header{gap:18px}
+
+/* Retail / repair workspace */
+.retail-shell{display:grid;grid-template-columns:minmax(420px,.9fr) minmax(620px,1.35fr);gap:18px;align-items:start}
+.retail-controls{position:sticky;top:16px}
+.retail-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.retail-toolbar{display:grid;grid-template-columns:1.35fr .85fr;gap:10px;margin-bottom:12px}
+.retail-catalog{display:grid;gap:8px;max-height:430px;overflow:auto;padding-right:4px}
+.retail-item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 11px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.retail-item:hover{border-color:#b6d5cf;background:#fbfdfc}
+.retail-item h4{margin:0 0 3px;font-size:13px;line-height:1.3;color:#213d39}
+.retail-item small{display:block;color:var(--muted);font-size:11px;line-height:1.35}
+.retail-item-price{text-align:right;font-weight:850;color:var(--brand);font-size:13px;white-space:nowrap}
+.retail-add{margin-top:5px;border:0;border-radius:8px;padding:6px 9px;background:#edf8f5;color:#0f766e;font-weight:800;cursor:pointer}
+.retail-cart{margin-top:15px;border-top:1px solid var(--line);padding-top:14px}
+.retail-cart h3{margin:0 0 9px}
+.retail-cart-row{display:grid;grid-template-columns:minmax(0,1fr) 68px 86px 34px;gap:7px;align-items:center;padding:8px 0;border-bottom:1px solid #edf2f1}
+.retail-cart-row b{font-size:12px;line-height:1.3}
+.retail-cart-row small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.retail-cart-row input{width:100%;padding:7px;border:1px solid var(--line);border-radius:7px}
+.retail-remove{border:0;background:#fff0ee;color:#b42318;border-radius:7px;width:30px;height:30px;font-weight:900;cursor:pointer}
+.retail-cart-total{display:flex;justify-content:space-between;align-items:center;padding:12px 0 2px;font-size:16px;font-weight:900;color:#17322f}
+.retail-empty{padding:18px;border:1px dashed #cbd5e1;border-radius:10px;text-align:center;color:#73837f;font-size:12px;background:#fafcfc}
+.retail-custom{margin-top:12px;padding:11px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px}
+.retail-custom-grid{display:grid;grid-template-columns:1.5fr .65fr .8fr auto;gap:7px;align-items:end}
+.retail-custom-grid .field{margin:0}
+.retail-preview-note{font-size:8px;color:#71817e;margin-top:2mm}
+.retail-category-chip{display:inline-block;margin-right:5px;padding:3px 7px;border-radius:999px;background:#fff3e8;color:#c2410c;font-size:7.5px;font-weight:700}
+.retail-tab{border-color:#fed7aa!important;color:#c2410c!important;background:#fff7ed!important}
+.retail-tab.active{background:#ea580c!important;color:#fff!important;border-color:#ea580c!important}
+
+@media(max-width:1100px){.retail-shell{grid-template-columns:1fr}.retail-controls{position:static}}
+@media(max-width:760px){.retail-toolbar,.retail-custom-grid{grid-template-columns:1fr}.retail-cart-row{grid-template-columns:1fr 62px 80px 34px}}
+
+@media print{
+  .quote-company{font-size:8.7px!important;white-space:nowrap!important}
+  .quote-brand-copy{max-width:none!important}
+  .quote-logo{width:40mm!important;max-width:152px!important}
+  .retail-controls{display:none!important}
+  .retail-shell{display:block!important}
+}
