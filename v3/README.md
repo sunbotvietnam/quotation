@@ -1,37 +1,39 @@
 # SUNBOT SALES PRICEBOOK V3
 
-Bản V3 là sales configurator (công cụ cấu hình bán hàng) cho Sunbot Pricebook Master 2026.
+V3 là công cụ báo giá production của Sunbot. Frontend chạy tĩnh; xác thực, danh mục, giá, quy tắc tính và snapshot báo giá đều do backend Sunbot OPS xử lý.
 
-## Mục tiêu
+## Luồng sử dụng
 
-- Cho Sales bắt đầu từ cấu hình mẫu Basic / Standard / Plus hoặc tự cấu hình.
-- Basic / Standard / Plus là **cấu hình triển khai**, không phải ba phiên bản chất lượng khác nhau của chương trình.
-- Tự động cộng cấu phần theo giá khuyến nghị hiện hành.
-- Hỗ trợ cây quyết định trường Sunbot kế thừa.
-- Hỗ trợ máy tính phí mạng lưới Operator.
-- Không hiển thị giá sàn trên frontend công khai.
+- Chỉ nhập mật khẩu nội bộ đang dùng cho Sunbot OPS; không yêu cầu ID, email hoặc PIN riêng.
+- Chọn `Giải pháp Sunbot` hoặc `Vật liệu & sửa chữa lẻ`.
+- Báo giá chưa lưu luôn mang trạng thái `BẢN NHÁP` và không thể in.
+- Khi lưu, backend cấp mã `BG/SUNBOT/YYYY/MMDD-NNN`, lưu snapshot và mở chức năng in/PDF.
+- Sửa báo giá đã lưu sẽ quay về bản nháp. Lần lưu tiếp theo giữ nguyên mã và tăng phiên bản.
 
-## Nguồn nghiệp vụ
+## Kiến trúc
 
-- `SUNBOT_PRICEBOOK_MASTER_2026_CHINH_THUC`
-- `SUNBOT PRICEBOOK MASTER 2026 - CẨM NANG SALES & VẬN HÀNH GIÁ`
+- `js/api.js`: cầu nối duy nhất tới Apps Script Web App.
+- `js/auth.js`: đăng nhập bằng mật khẩu dùng chung và quản lý phiên theo tab.
+- `js/catalog.js`: đọc danh mục runtime, không chứa giá hoặc SKU hardcode.
+- `js/solution-builder.js`: cấu hình giải pháp.
+- `js/retail-builder.js`: vật liệu, linh kiện và sửa chữa lẻ.
+- `js/quote-lifecycle.js`: preview, save, dirty/version lifecycle.
+- `js/quote-document.js`: bản báo giá A4 và tên file PDF.
+- `js/state.js`, `js/storage.js`, `js/utils.js`: state và tiện ích thuần.
 
-Các URL nguồn được khai báo trong `catalog.js` để Sales truy cập tài liệu gốc.
+Backend tương ứng nằm trong repo `sunbot-ops`, file `apps-script/QuotationV3Refactor.gs`, được định tuyến qua `PagesBridge.gs` với mode `quotationV3`.
 
-## Kiến trúc hiện tại
+## Nguyên tắc production
 
-- Frontend tĩnh: `index.html`, `styles.css`, `app.js`, `catalog.js`
-- Đăng nhập: dùng lại `pagesBridge` / `pinLogin` của backend Google Apps Script hiện hành.
-- Giá khuyến nghị hiện đang được snapshot trong `catalog.js` để MVP chạy độc lập.
-- Giá sàn, rule phê duyệt nhạy cảm và secret **không được** đưa vào frontend.
+- Backend Pricebook là nguồn duy nhất cho item, giá, combo và quy tắc.
+- Frontend không có fallback catalog, fallback price, giá sàn, secret hoặc mật khẩu.
+- Backend tính lại toàn bộ giá khi preview và khi lưu; không tin đơn giá/tổng tiền do trình duyệt gửi lên.
+- Hạng mục tùy chỉnh chỉ được phép trong báo giá lẻ và luôn có cảnh báo xác nhận giá.
+- Dữ liệu V2, ID sheet hiện hành và URL Web App production không bị thay đổi.
 
-## Lộ trình tiếp theo
+## Kiểm tra nhanh
 
-1. Chuyển catalog giá khuyến nghị sang API đọc trực tiếp Pricebook Master sau đăng nhập.
-2. Mở rộng backend từ package-centric sang configuration-driven quotation.
-3. Lưu báo giá nhiều dòng, versioning, phê duyệt dưới giá khuyến nghị/giá sàn và lịch sử thay đổi.
-4. Đồng bộ CRM / Sunbot Ops nếu cần.
-
-## Quy tắc an toàn
-
-Repo có thể public. Tuyệt đối không commit API secret, mật khẩu, giá sàn hoặc dữ liệu khách hàng.
+```bash
+for file in v3/js/*.js; do node --check "$file"; done
+git diff --check
+```
