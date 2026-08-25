@@ -18,3 +18,6 @@
   .quote-top-accent,.quote-bottom-accent,.quote-table th,.quote-total-box{print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
   .quote-table{font-size:9px}.quote-table th{font-size:8px}.quote-table td{padding:7px 6px}.quote-row,.quote-recipient,.quote-total-box,.quote-conditions,.quote-footer{break-inside:avoid!important;page-break-inside:avoid!important}
 }
+.bridge-frame,.bridge-form{display:none}.busy:after{content:'Đang xử lý…';position:fixed;right:18px;bottom:18px;background:var(--ink);color:#fff;padding:10px 14px;border-radius:10px;z-index:60;box-shadow:var(--shadow)}
+.context-note{margin:-8px 0 14px;padding:9px 12px;border-radius:10px;background:var(--soft);color:var(--brand2);font-size:12px;font-weight:700}
+.config-lines{display:grid;gap:8px}.config-line{display:grid;grid-template-columns:minmax(0,1fr) 78px 34px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #edf2f1}.config-line b{font-size:12px;line-height:1.35}.config-line small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.config-line input{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px}
