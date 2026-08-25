@@ -39,12 +39,26 @@
     const t=e.target;
     if(!t || !t.closest) return;
     if(t.closest('.retail-add') || t.closest('.retail-remove') || t.closest('#addCustom')) retailDirty=true;
+    if(t.closest('[data-combo]') || t.closest('#custom') || t.closest('#backCombo')) markSolutionDirty();
   },true);
 
   function cleanupCommon(){
     document.querySelectorAll('.quote-company').forEach(el=>{
       setText(el,'CÔNG TY CỔ PHẦN CÔNG NGHỆ GIÁO DỤC KIRO VIỆT NAM');
     });
+
+    const topBrand=document.querySelector('.top .brand');
+    if(topBrand){
+      setText(topBrand.querySelector('h1'),'SUNBOT - CÔNG CỤ BÁO GIÁ');
+      setText(topBrand.querySelector('small'),'Báo giá giải pháp · vật liệu · sửa chữa');
+    }
+
+    document.querySelectorAll('.top a').forEach(a=>{
+      if(/Pricebook Master/i.test(a.textContent||'')) setText(a,'Bảng giá chi tiết');
+    });
+
+    const footer=document.querySelector('body > #app .footer');
+    if(footer) setText(footer,'Sunbot · Giá hiển thị là giá khuyến nghị, chưa gồm VAT và chi phí phát sinh nếu không ghi khác.');
   }
 
   function cleanupSolution(){
@@ -125,7 +139,9 @@
       ['Danh mục dưới đây được lấy từ Pricebook backend hiện hành.','Danh mục dưới đây áp dụng theo bảng giá Sunbot tại thời điểm lập báo giá.'],
       ['Báo giá dưới đây được lập từ Pricebook hiện hành của Sunbot.','Báo giá áp dụng theo chính sách giá Sunbot hiện hành.'],
       ['Google Sheet backend','bảng giá Sunbot'],
-      ['Pricebook backend','bảng giá Sunbot']
+      ['Pricebook backend','bảng giá Sunbot'],
+      ['Pricebook Master','bảng giá Sunbot'],
+      ['Master 2026','bảng giá 2026']
     ];
     document.querySelectorAll('p,small,span,div').forEach(el=>{
       if(el.children.length) return;
