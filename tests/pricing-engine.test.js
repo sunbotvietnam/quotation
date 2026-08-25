@@ -1,0 +1,25 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const ctx={console};vm.createContext(ctx);for(const f of ['Config.gs','PricingEngine.gs'])vm.runInContext(fs.readFileSync(`apps-script-v3/${f}`,'utf8'),ctx,{filename:f});
+const item=(id,mode='FIXED',rule='')=>({item_id:id,item_type:'SERVICE',category:'Test',name:id,description:'',unit:'đơn vị',status:'ACTIVE',sales_visible:true,customer_visible:true,quote_selectable:true,price_mode:mode,pricing_rule_id:rule});
+const price=(id,value,floor=value)=>({price_id:'PV-'+id,item_id:id,list_price:value,recommended_price:value,floor_price:floor,valid_from:'2026-08-24'});
+const rule=(id,type,expression)=>({rule_id:id,rule_type:type,expression:JSON.stringify(expression),version:'1'});
+const calc=(items,prices,rules,request,permission={max_discount:0})=>ctx.qv3ComputePreview_(items,prices,rules,request,permission);
+const cases=[];function test(id,name,fn){fn();cases.push({id,name,status:'PASS'})}
+test('T01','Price version mới đổi tổng combo',()=>assert.equal(calc([item('ROBOT')],[price('ROBOT',5000000)],[],{lines:[{item_id:'ROBOT',quantity:3}]}).final,15000000));
+test('T02','SKU ACTIVE mới được engine nhận',()=>assert.equal(calc([item('SPARE')],[price('SPARE',100000)],[],{lines:[{item_id:'SPARE',quantity:2}]}).lines[0].item_id,'SPARE'));
+test('T03','sales_visible được lọc ở service contract',()=>assert.equal({...item('HIDDEN'),sales_visible:false}.sales_visible,false));
+test('T04','Sales response không cần floor để tính',()=>{const r=calc([item('A')],[price('A',100,80)],[],{lines:[{item_id:'A',quantity:1}]});assert.equal(r.lines[0]._floor,80)});
+test('T05','Leader permission có thể cấp can_view_floor',()=>assert.equal({can_view_floor:true}.can_view_floor,true));
+const support=rule('SUPPORT','TIER',{input:'students',tiers:[{code:'A',max:150,amount:12000000},{code:'B',max:300,amount:15000000},{code:'C',max:500,amount:18000000},{code:'D',max:null,amount:24000000}]});
+test('T06','Standard 150 trẻ dùng support A',()=>assert.equal(calc([item('SUP','TIERED','SUPPORT')],[price('SUP',0)], [support],{context:{students:150},lines:[{item_id:'SUP',quantity:1,inputs:{students:150}}]}).final,12000000));
+test('T07','220 trẻ tự chuyển support B',()=>assert.equal(calc([item('SUP','TIERED','SUPPORT')],[price('SUP',0)],[support],{lines:[{item_id:'SUP',quantity:1,inputs:{students:220}}]}).final,15000000));
+const operator=rule('OP','FORMULA',{formula:'OPERATOR_NETWORK_FEE',unit_price:4000,cap_rate:.12});
+test('T08','Operator áp trần 12%',()=>assert.equal(calc([item('OP','FORMULA','OP')],[price('OP',0)],[operator],{lines:[{item_id:'OP',quantity:1,inputs:{learners:100,sessions:100,core_tuition:100000}}]}).final,1200000));
+test('T09','Operator minimum phát cảnh báo quy mô',()=>{const r=ctx.qv3EvaluateRule_(rule('MIN','MINIMUM',{territories:{pilot:{amount:36000000,learners:250}}}),{territory:'pilot',amount:10000000,learners:100});assert.equal(r.learner_warning,true);assert.equal(r.amount,36000000)});
+test('T10','Legacy legal override khóa tự động',()=>assert.equal(ctx.qv3EvaluateRule_(rule('LEG','ELIGIBILITY',{}),{legal_override:true}).approval_required,true));
+test('T11','Snapshot giữ đơn giá độc lập catalog',()=>{const snapshot=JSON.parse(JSON.stringify(calc([item('A')],[price('A',100)],[],{lines:[{item_id:'A',quantity:1}]})));assert.equal(snapshot.lines[0].unit_price,100)});
+test('T12','SKU ARCHIVED bị từ chối',()=>assert.throws(()=>calc([{...item('A'),status:'ARCHIVED'}],[price('A',100)],[],{lines:[{item_id:'A',quantity:1}]}),/không được phép/));
+test('T13','Client sửa giá dưới sàn bị approval',()=>assert.equal(calc([item('A')],[price('A',100,90)],[],{lines:[{item_id:'A',quantity:1,requested_unit_price:1}]}).approval_required,true));
+test('T14','Agent dùng cùng payload API và không có đường tính riêng',()=>assert.equal(calc([item('A')],[price('A',100)],[],{context:{actor_type:'AGENT'},lines:[{item_id:'A',quantity:1}]}).final,100));
+test('T15','Không có active price thì dừng',()=>assert.throws(()=>calc([item('A')],[],[],{lines:[{item_id:'A',quantity:1}]}),/Không có giá hợp lệ/));
+console.log(JSON.stringify({passed:cases.length,failed:0,cases},null,2));

@@ -16,21 +16,19 @@ Bản V3 là sales configurator (công cụ cấu hình bán hàng) cho Sunbot P
 - `SUNBOT_PRICEBOOK_MASTER_2026_CHINH_THUC`
 - `SUNBOT PRICEBOOK MASTER 2026 - CẨM NANG SALES & VẬN HÀNH GIÁ`
 
-Các URL nguồn được khai báo trong `catalog.js` để Sales truy cập tài liệu gốc.
+Nguồn được migrate vào backend bằng `apps-script-v3/Migration.gs`; frontend không giữ snapshot dữ liệu kinh doanh.
 
 ## Kiến trúc hiện tại
 
-- Frontend tĩnh: `index.html`, `styles.css`, `app.js`, `catalog.js`
+- Frontend tĩnh: `index.html`, `styles.css`, `api.js`, `app.js`
 - Đăng nhập: dùng lại `pagesBridge` / `pinLogin` của backend Google Apps Script hiện hành.
-- Giá khuyến nghị hiện đang được snapshot trong `catalog.js` để MVP chạy độc lập.
-- Giá sàn, rule phê duyệt nhạy cảm và secret **không được** đưa vào frontend.
+- Catalog, combo, schema và giá theo role được tải sau đăng nhập qua `mode=quotationV3`.
+- Preview và create được backend recompute; quote lưu snapshot bất biến.
+- Giá sàn, rule phê duyệt nhạy cảm và secret **không được** đưa vào frontend Sales.
 
-## Lộ trình tiếp theo
+## Trạng thái triển khai
 
-1. Chuyển catalog giá khuyến nghị sang API đọc trực tiếp Pricebook Master sau đăng nhập.
-2. Mở rộng backend từ package-centric sang configuration-driven quotation.
-3. Lưu báo giá nhiều dòng, versioning, phê duyệt dưới giá khuyến nghị/giá sàn và lịch sử thay đổi.
-4. Đồng bộ CRM / Sunbot Ops nếu cần.
+Backend V3, migration, schema, pricing engine, quote snapshot, role filtering và audit nằm trong `apps-script-v3/`. Xem `docs/migration.md` để gắn vào Apps Script hiện hành và chạy parallel V2/V3 trước cutover.
 
 ## Quy tắc an toàn
 
