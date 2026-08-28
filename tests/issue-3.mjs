@@ -8,6 +8,8 @@ const app = read("v3/app.js"),
   catalog = read("v3/catalog.js"),
   training = read("v3/training-addons.js"),
   workflow = read("v3/quote-workflow.js"),
+  config = read("v3/configuration-description.js"),
+  customerPolish = read("v3/quote-customer-polish.js"),
   integration = read("v3/SERVER-INTEGRATION.md");
 const tests = [
   ["ID and password login payload", () => assert.match(auth, /login_id: loginId/)],
@@ -21,10 +23,20 @@ const tests = [
   ["save asks for NEEDS_APPROVAL", () => assert.match(app, /desired_status: "NEEDS_APPROVAL"/)],
   ["revision sends quote id", () => assert.match(app, /quote_id: state\.quoteId/)],
   ["training add-ons are selectable", () => assert.match(training, /TRAIN1_EXTRA10/) && assert.match(training, /RETRAIN2_EXTRA10/)],
+  ["configuration narrative has six explanatory sections", () => {
+    for (let i = 1; i <= 6; i++) assert.match(config, new RegExp(`## ${i}\\.`));
+  }],
+  ["configuration narrative is persisted with quote", () => assert.match(config, /configuration_description/)],
+  ["customer proposal separates narrative and pricing pages", () => {
+    assert.match(config, /customer-proposal-narrative/);
+    assert.match(config, /customer-proposal-price/);
+    assert.match(config, /page-break-after:always/);
+  }],
+  ["customer-facing commercial notes remain present", () => assert.match(customerPolish, /Lưu ý thương mại/)],
   ["no hardcoded frontend prices", () => assert.doesNotMatch(catalog, /price\s*:\s*\d/)],
   [
     "no credential material or legacy login dependency",
-    () => assert.doesNotMatch(app + auth + catalog + workflow, /PASSWORD_HASH|SHARED_PASSWORD|pinLogin|loginPinByEmail|type=["']email/),
+    () => assert.doesNotMatch(app + auth + catalog + workflow + config, /PASSWORD_HASH|SHARED_PASSWORD|pinLogin|loginPinByEmail|type=["']email/),
   ],
   ["contract documents backend version", () => assert.match(integration, /2026\.08\.28-v2/)],
   [
@@ -35,6 +47,8 @@ const tests = [
       new vm.Script(catalog);
       new vm.Script(training);
       new vm.Script(workflow);
+      new vm.Script(config);
+      new vm.Script(customerPolish);
     },
   ],
 ];
