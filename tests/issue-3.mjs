@@ -9,6 +9,7 @@ const app = read("v3/app.js"),
   training = read("v3/training-addons.js"),
   workflow = read("v3/quote-workflow.js"),
   config = read("v3/configuration-description.js"),
+  commercial = read("v3/commercial-configurator.js"),
   customerPolish = read("v3/quote-customer-polish.js"),
   integration = read("v3/SERVER-INTEGRATION.md");
 const tests = [
@@ -32,11 +33,24 @@ const tests = [
     assert.match(config, /customer-proposal-price/);
     assert.match(config, /page-break-after:always/);
   }],
+  ["monthly rights terms include 12 36 60", () => {
+    assert.match(commercial, /\[12,36,60\]/);
+    assert.match(commercial, /RIGHT_CORE_12M/);
+  }],
+  ["support is quoted by month quantity", () => {
+    assert.match(commercial, /supportMonths/);
+    assert.match(commercial, /qty: Number\(state\.supportMonths\)/);
+  }],
+  ["Flex model is visible but locked pending official rate", () => {
+    assert.match(commercial, /Theo số trẻ · Flex/);
+    assert.match(commercial, /Chờ khóa đơn giá chính thức/);
+  }],
+  ["approval UX uses split workspace", () => assert.match(commercial, /approval-workspace/)],
   ["customer-facing commercial notes remain present", () => assert.match(customerPolish, /Lưu ý thương mại/)],
-  ["no hardcoded frontend prices", () => assert.doesNotMatch(catalog, /price\s*:\s*\d/)],
+  ["no hardcoded frontend product prices", () => assert.doesNotMatch(catalog, /price\s*:\s*\d/)],
   [
     "no credential material or legacy login dependency",
-    () => assert.doesNotMatch(app + auth + catalog + workflow + config, /PASSWORD_HASH|SHARED_PASSWORD|pinLogin|loginPinByEmail|type=["']email/),
+    () => assert.doesNotMatch(app + auth + catalog + workflow + config + commercial, /PASSWORD_HASH|SHARED_PASSWORD|pinLogin|loginPinByEmail|type=["']email/),
   ],
   ["contract documents backend version", () => assert.match(integration, /2026\.08\.28-v2/)],
   [
@@ -48,6 +62,7 @@ const tests = [
       new vm.Script(training);
       new vm.Script(workflow);
       new vm.Script(config);
+      new vm.Script(commercial);
       new vm.Script(customerPolish);
     },
   ],
