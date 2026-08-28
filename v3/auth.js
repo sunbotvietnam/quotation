@@ -2,11 +2,35 @@
 // IMPORTANT: no real passwords or password hashes belong in this public frontend.
 (function () {
   const LOGIN_KEY = "sunbot_pricebook_v3_login_id";
+  const MANAGERS = [
+    { name: "Hoàng Nhung", region: "Hà Nội" },
+    { name: "Minh Thu", region: "Đông Bắc" },
+    { name: "Lê Dung", region: "Bắc Trung Bộ" },
+  ];
   state.loginId = sessionStorage.getItem(LOGIN_KEY) || "";
 
-  const baseCreatorOptions = creatorOptions;
+  const baseRegionOf = regionOf;
+  regionOf = function (name) {
+    if (
+      state.user &&
+      String(name || "").toLowerCase() ===
+        String(state.user.display_name || "").toLowerCase()
+    )
+      return state.user.region || "";
+    const manager = MANAGERS.find((x) => x.name === name);
+    return manager?.region || baseRegionOf(name);
+  };
+
   creatorOptions = function () {
-    if (state.role === "ADMIN") return baseCreatorOptions();
+    if (state.role === "ADMIN") {
+      return (
+        '<option value="">-- Chọn Trưởng vùng --</option>' +
+        MANAGERS.map(
+          (manager) =>
+            `<option value="${esc(manager.name)}" ${state.createdBy === manager.name ? "selected" : ""}>${esc(manager.name)} – ${esc(manager.region)}</option>`,
+        ).join("")
+      );
+    }
     const manager = state.user;
     if (!manager?.display_name)
       return '<option value="">-- Tài khoản chưa gắn Trưởng vùng --</option>';
