@@ -24,19 +24,19 @@
   creatorOptions = function () {
     if (state.role === "ADMIN") {
       return (
-        '<option value="">-- Chọn Trưởng vùng --</option>' +
+        '<option value="">-- Chọn người lập báo giá --</option>' +
         MANAGERS.map(
           (manager) =>
-            `<option value="${esc(manager.name)}" ${state.createdBy === manager.name ? "selected" : ""}>${esc(manager.name)} – ${esc(manager.region)}</option>`,
+            `<option value="${esc(manager.name)}" ${state.createdBy === manager.name ? "selected" : ""}>${esc(manager.name)}</option>`,
         ).join("")
       );
     }
     const manager = state.user;
     if (!manager?.display_name)
-      return '<option value="">-- Tài khoản chưa gắn Trưởng vùng --</option>';
+      return '<option value="">-- Tài khoản chưa gắn người lập báo giá --</option>';
     state.createdBy = manager.display_name;
     sessionStorage.setItem(CREATOR_KEY, manager.display_name);
-    return `<option value="${esc(manager.display_name)}" selected>${esc(manager.display_name)} – ${esc(manager.region)}</option>`;
+    return `<option value="${esc(manager.display_name)}" selected>${esc(manager.display_name)}</option>`;
   };
 
   loginView = function (msg = "") {
