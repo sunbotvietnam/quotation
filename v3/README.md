@@ -1,37 +1,41 @@
-# SUNBOT SALES PRICEBOOK V3
+# SUNBOT - CÔNG CỤ BÁO GIÁ V3
 
-Bản V3 là sales configurator (công cụ cấu hình bán hàng) cho Sunbot Pricebook Master 2026.
+V3 là công cụ cấu hình và lập báo giá nội bộ cho Sunbot. Mục tiêu là để Trưởng vùng tạo báo giá nhanh, trong khi giá, quyền duyệt và logic thương mại nằm ở Backend.
 
-## Mục tiêu
+## Quy trình hiện hành
 
-- Cho Sales bắt đầu từ cấu hình mẫu Basic / Standard / Plus hoặc tự cấu hình.
-- Basic / Standard / Plus là **cấu hình triển khai**, không phải ba phiên bản chất lượng khác nhau của chương trình.
-- Tự động cộng cấu phần theo giá khuyến nghị hiện hành.
-- Hỗ trợ cây quyết định trường Sunbot kế thừa.
-- Hỗ trợ máy tính phí mạng lưới Operator.
-- Không hiển thị giá sàn trên frontend công khai.
+1. Cán bộ vận hành phát hiện nhu cầu/cơ hội và chuyển lead cho Trưởng vùng.
+2. Chỉ Trưởng vùng lập báo giá: Nhung – Hà Nội; Thu – Đông Bắc; Dung – Bắc Trung Bộ.
+3. Trưởng vùng lưu báo giá ở trạng thái `NEEDS_APPROVAL` – Chờ Admin duyệt.
+4. Chỉ báo giá đã được Admin duyệt mới được xuất/gửi khách hàng.
+
+## Kiến trúc
+
+- `index.html`: entry point tối giản.
+- `catalog.js`: snapshot dự phòng; giá chính ưu tiên tải từ Backend sau đăng nhập.
+- `app.js`: toàn bộ runtime V3 gồm shared-password login, tải catalog, cấu hình, lưu báo giá và trạng thái duyệt.
+- `styles.css`, `retail.css`: giao diện và bố cục báo giá.
+
+Không còn chuỗi patch email/PIN 6 số. Các file patch cũ đã được loại khỏi runtime.
 
 ## Nguồn nghiệp vụ
 
-- `SUNBOT_PRICEBOOK_MASTER_2026_CHINH_THUC`
-- `SUNBOT PRICEBOOK MASTER 2026 - CẨM NANG SALES & VẬN HÀNH GIÁ`
+- Pricebook Master: `14wk6li0oRK3ho1fAPkPPG1vPYlTFoMccRmn3sHpeAxc`
+- Backend: `1Er11CKeojfSKWfb9zYGTXSLDWocfYX7d-Gi5Sya2EDg`
+- Commercial Policy 01–05: `1ff_Lz7A2lgfMNMwMLd3EZuMOAmsQBvmxxVXhlfhkPcE`
 
-Các URL nguồn được khai báo trong `catalog.js` để Sales truy cập tài liệu gốc.
+## Quy tắc chính
 
-## Kiến trúc hiện tại
+- A/B: Trưởng vùng có vùng đề xuất giảm giá tối đa 3%, nhưng mọi báo giá vẫn phải Admin duyệt trước khi gửi khách.
+- C – hàng vật lý: Trưởng vùng không tự giảm.
+- Camp/Event: nhóm hỗn hợp bảo vệ giá; Trưởng vùng không tự giảm; Admin chỉ cân nhắc tối đa 5% khi doanh thu hạng mục từ 50 triệu đồng và không dưới giá sàn.
+- Android Box: giá khuyến nghị 1,8 triệu; giá sàn được giữ trong Backend, không đưa vào frontend public.
+- Không đưa lương, commission, residual hay dữ liệu nhạy cảm lên giao diện Trưởng vùng.
 
-- Frontend tĩnh: `index.html`, `styles.css`, `app.js`, `catalog.js`
-- Đăng nhập: dùng lại `pagesBridge` / `pinLogin` của backend Google Apps Script hiện hành.
-- Giá khuyến nghị hiện đang được snapshot trong `catalog.js` để MVP chạy độc lập.
-- Giá sàn, rule phê duyệt nhạy cảm và secret **không được** đưa vào frontend.
+## Xác thực USER/ADMIN
 
-## Lộ trình tiếp theo
+Backend đã chốt mục tiêu `DUAL_SHARED_PASSWORD`, nhưng Apps Script đang triển khai hiện chỉ có endpoint shared-password cũ. V3 đã sẵn sàng nhận `role=REGIONAL_MANAGER` hoặc `role=ADMIN` từ server; phần thay đổi server còn lại được mô tả trong `SERVER-INTEGRATION.md`.
 
-1. Chuyển catalog giá khuyến nghị sang API đọc trực tiếp Pricebook Master sau đăng nhập.
-2. Mở rộng backend từ package-centric sang configuration-driven quotation.
-3. Lưu báo giá nhiều dòng, versioning, phê duyệt dưới giá khuyến nghị/giá sàn và lịch sử thay đổi.
-4. Đồng bộ CRM / Sunbot Ops nếu cần.
+## An toàn
 
-## Quy tắc an toàn
-
-Repo có thể public. Tuyệt đối không commit API secret, mật khẩu, giá sàn hoặc dữ liệu khách hàng.
+Repo có thể public. Không commit mật khẩu, hash mật khẩu, giá sàn, Actual COGS, dữ liệu khách hàng hoặc secret API.
