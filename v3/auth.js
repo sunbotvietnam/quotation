@@ -2,23 +2,12 @@
 // IMPORTANT: no real passwords or password hashes belong in this public frontend.
 (function () {
   const LOGIN_KEY = "sunbot_pricebook_v3_login_id";
-  const MANAGERS = [
-    { name: "Hoàng Nhung", region: "Hà Nội" },
-    { name: "Minh Thu", region: "Đông Bắc" },
-    { name: "Lê Dung", region: "Bắc Trung Bộ" },
-  ];
+  const MANAGERS = ["Hoàng Nhung", "Minh Thu", "Lê Dung"];
   state.loginId = sessionStorage.getItem(LOGIN_KEY) || "";
 
-  const baseRegionOf = regionOf;
-  regionOf = function (name) {
-    if (
-      state.user &&
-      String(name || "").toLowerCase() ===
-        String(state.user.display_name || "").toLowerCase()
-    )
-      return state.user.region || "";
-    const manager = MANAGERS.find((x) => x.name === name);
-    return manager?.region || baseRegionOf(name);
+  // Quotation workflow no longer uses or displays geographic regions.
+  regionOf = function () {
+    return "";
   };
 
   creatorOptions = function () {
@@ -26,8 +15,8 @@
       return (
         '<option value="">-- Chọn người lập báo giá --</option>' +
         MANAGERS.map(
-          (manager) =>
-            `<option value="${esc(manager.name)}" ${state.createdBy === manager.name ? "selected" : ""}>${esc(manager.name)}</option>`,
+          (name) =>
+            `<option value="${esc(name)}" ${state.createdBy === name ? "selected" : ""}>${esc(name)}</option>`,
         ).join("")
       );
     }
