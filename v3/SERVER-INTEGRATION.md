@@ -1,6 +1,6 @@
 # SERVER INTEGRATION – V3
 
-Tài liệu này cô lập phần còn phải sửa trong Google Apps Script để hoàn tất phân quyền Trưởng vùng/Admin. Frontend không chứa mật khẩu hoặc password hash.
+Contract này đã được triển khai trong Sunbot OPS bằng `apps-script/QuotationApprovalApi.gs` và route `quotationAccess` / `quotationShared`. Frontend không chứa mật khẩu hoặc password hash.
 
 ## Mục tiêu xác thực
 
@@ -37,7 +37,7 @@ Server phải:
 
 ## Bootstrap
 
-`quotationShared/bootstrap` cần trả tối thiểu:
+`quotationShared/bootstrap` trả tối thiểu:
 
 ```json
 {
@@ -76,11 +76,13 @@ Server phải coi `created_by`, `region`, `role` từ client là dữ liệu tha
 
 ## Duyệt báo giá
 
-Bổ sung subaction:
+Các subaction hiện hành:
 
 - `approveQuote`
 - `rejectQuote`
 - `getQuote`
+- `listQuotes`
+- `exportQuote`
 
 Chỉ token `ADMIN` được approve/reject.
 
@@ -109,6 +111,12 @@ Server phải là lớp enforcement cuối cùng: chỉ `APPROVED` mới đượ
 - Custom Line, dưới floor, miễn phí, điều khoản thanh toán khác chuẩn: Admin special approval.
 - Android Box: recommended 1.800.000; floor 1.700.000.
 
-## Nguyên tắc triển khai
+## Triển khai
 
-Không quay lại email/PIN 6 số. Không để secret trong GitHub. Mô hình hiện tại chỉ cần 4 ID nội bộ + role token và bảng `AUTH_USERS` phía Backend.
+Source Apps Script nằm trong repo `sunbotvietnam/sunbot-ops`, thư mục `apps-script/`. Workflow `Deploy Apps Script production` dùng project ID đã pin trong GitHub Actions và redeploy Web App production hiện hành; không tạo Web App thay thế.
+
+Deployment URL frontend đang gọi:
+
+`https://script.google.com/macros/s/AKfycbw32BGSXwFVOpRCknx5hn8-k2m5ZXox26_y2mnZKVWL0JKHCv_Qtly5JiY0FS9e87kU/exec`
+
+Không quay lại email hoặc PIN 6 số. Không để secret trong GitHub. Danh tính, role, region và hash xác thực chỉ đọc từ `AUTH_USERS`; session có thời hạn và được lưu trong Script Cache.

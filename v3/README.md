@@ -12,8 +12,8 @@ V3 là công cụ cấu hình và lập báo giá nội bộ cho Sunbot. Mục t
 ## Kiến trúc
 
 - `index.html`: entry point tối giản.
-- `catalog.js`: snapshot dự phòng; giá chính ưu tiên tải từ Backend sau đăng nhập.
-- `app.js`: toàn bộ runtime V3 gồm shared-password login, tải catalog, cấu hình, lưu báo giá và trạng thái duyệt.
+- `catalog.js`: chỉ giữ cấu trúc combo; không chứa giá. Item và giá bắt buộc tải từ Backend sau đăng nhập.
+- `app.js`: runtime V3 gồm ID + mật khẩu, tải catalog, cấu hình, lưu báo giá và màn hình Admin duyệt.
 - `styles.css`, `retail.css`: giao diện và bố cục báo giá.
 
 Không còn chuỗi patch email/PIN 6 số. Các file patch cũ đã được loại khỏi runtime.
@@ -32,9 +32,9 @@ Không còn chuỗi patch email/PIN 6 số. Các file patch cũ đã được lo
 - Android Box: giá khuyến nghị 1,8 triệu; giá sàn được giữ trong Backend, không đưa vào frontend public.
 - Không đưa lương, commission, residual hay dữ liệu nhạy cảm lên giao diện Trưởng vùng.
 
-## Xác thực USER/ADMIN
+## Xác thực Trưởng vùng/Admin
 
-Backend đã chốt mục tiêu `DUAL_SHARED_PASSWORD`, nhưng Apps Script đang triển khai hiện chỉ có endpoint shared-password cũ. V3 đã sẵn sàng nhận `role=REGIONAL_MANAGER` hoặc `role=ADMIN` từ server; phần thay đổi server còn lại được mô tả trong `SERVER-INTEGRATION.md`.
+Backend đọc `AUTH_USERS`, kiểm tra SHA-256 server-side và trả session chứa `login_id`, `display_name`, `role`, `region`, `expires_at`. Trưởng vùng không thể mạo danh người lập khác; chỉ Admin được duyệt/từ chối; chỉ snapshot `APPROVED` được backend cho xuất.
 
 ## An toàn
 
