@@ -34,6 +34,11 @@
     return "Đề xuất giải pháp Sunbot";
   }
 
+  function pdfTitle(mode, sourceDoc) {
+    const quoteId = quoteIdFromDocument(sourceDoc) || "Bao-gia-Sunbot";
+    return `${quoteId} - ${titleFor(mode)}`;
+  }
+
   function standaloneCss() {
     return `
       @page{size:A4 portrait;margin:12mm 14mm 13mm}
@@ -98,7 +103,7 @@
     const sections = sectionsFor(sourceDoc, mode);
     if (!sections.length) throw new Error("Chưa có nội dung phù hợp để xuất tài liệu này.");
     const content = sections.map((s) => `<section class="doc-section">${sanitizeClone(s).outerHTML}</section>`).join("");
-    return `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${titleFor(mode)}</title><style>${standaloneCss()}</style></head><body><main class="print-doc">${content}</main></body></html>`;
+    return `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${pdfTitle(mode, sourceDoc)}</title><style>${standaloneCss()}</style></head><body><main class="print-doc">${content}</main></body></html>`;
   }
 
   async function verifyApproved(doc) {
