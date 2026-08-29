@@ -110,8 +110,8 @@
     if (input) input.oninput = () => persistReason(input.value);
   };
 
-  // Save policy evidence with every approval request. Current backend safely ignores unknown
-  // fields; exception_reason/notes are already persisted and audited by the live backend.
+  // Save policy evidence with every approval request. The live backend already persists
+  // exception_reason/notes; the additional structured fields are forward-compatible.
   const baseBridge = bridge;
   bridge = function (mode, subaction, payload = {}, token = state.token) {
     if (mode === "quotationShared" && subaction === "saveSnapshot") {
@@ -143,24 +143,17 @@
     return baseBridge(mode, subaction, payload, token);
   };
 
-  const baseCopySummary = copySummary;
   copySummary = async function (lines, total) {
     const ctx = policyContext();
     const modelLabel = ctx.commercial_model === "SCALE" ? "Theo quy mô" : "Theo điểm trường";
     const recommendedLabel = ctx.recommended_model === "SCALE" ? "Theo quy mô" : "Theo điểm trường";
-    const policyText = `\nSố điểm: ${ctx.deployment_sites}\nMô hình đang chọn: ${modelLabel}\nKhuyến nghị quy chế: ${recommendedLabel}\nSo sánh 12 tháng: điểm ${money(ctx.point_comparison_amount)} · quy mô ${money(ctx.scale_comparison_amount)}${ctx.policy_match ? "" : `\nLý do ngoại lệ: ${ctx.model_exception_reason || "CHƯA NHẬP"}`}`;
+    const cheaperLabel = ctx.cheaper_model === "SCALE" ? "Theo quy mô" : ctx.cheaper_model === "POINT" ? "Theo điểm trường" : "Ngang nhau";
+    const txt = `${state.client || "Khách hàng"}\nNgười lập: ${state.createdBy || "-"}\nSố điểm triển khai: ${ctx.deployment_sites}\nTổng số trẻ: ${ctx.learner_count}\nMô hình đang chọn: ${modelLabel}\nKhuyến nghị quy chế: ${recommendedLabel}\nTheo điểm 12 tháng: ${money(ctx.point_comparison_amount)}\nTheo quy mô: ${money(ctx.scale_comparison_amount)}\nPhương án rẻ hơn: ${cheaperLabel}${ctx.policy_match ? "" : `\nLý do ngoại lệ: ${ctx.model_exception_reason || "CHƯA NHẬP"}`}\n\n${lines.map((l) => `${l.name}: ${l.qty} x ${money(l.price)} = ${money(l.qty * l.price)}`).join("\n")}\nTỔNG BÁO GIÁ: ${money(total)}\nTRẠNG THÁI: CHỜ ADMIN DUYỆT`;
     try {
-      const originalWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
-      let captured = "";
-      navigator.clipboard.writeText = async (text) => { captured = text; };
-      await baseCopySummary(lines, total);
-      navigator.clipboard.writeText = originalWrite;
-      await originalWrite(captured + policyText);
+      await navigator.clipboard.writeText(txt);
       alert("Đã sao chép tóm tắt nội bộ kèm căn cứ chọn mô hình.");
     } catch {
-      const fallback = `${state.client || "Khách hàng"}${policyText}\nTỔNG: ${money(total)}`;
-      try { await navigator.clipboard.writeText(fallback); alert("Đã sao chép tóm tắt nội bộ."); }
-      catch { alert(fallback); }
+      alert(txt);
     }
   };
 
