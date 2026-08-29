@@ -1,0 +1,170 @@
+/* A4 print/PDF layout for Sunbot customer proposals.
+   The browser page owns the physical A4 margins; proposal sections are allowed to
+   fragment naturally when content is longer than one page. */
+@media print {
+  @page { size: A4 portrait; margin: 12mm 14mm 12mm 14mm; }
+
+  html, body {
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body * { visibility: hidden !important; }
+  #quote-document, #quote-document * { visibility: visible !important; }
+
+  .wrap, .builder-shell, .quote-preview-wrap {
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  #quote-document {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #243331 !important;
+  }
+
+  .no-print, .nav, .top, .footer, .builder-controls { display: none !important; }
+
+  /* A proposal section starts on a clean physical sheet. If it grows beyond one
+     sheet, normal browser pagination is allowed instead of squeezing/cutting it. */
+  .customer-proposal-page {
+    display: block !important;
+    width: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+  .customer-proposal-page:last-child {
+    break-after: auto !important;
+    page-break-after: auto !important;
+  }
+  .customer-proposal-narrative,
+  .customer-proposal-price {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  /* Keep small semantic blocks together; never keep an entire long page together. */
+  .quote-header,
+  .quote-recipient,
+  .quote-total-box,
+  .quote-commercial-notes,
+  .quote-conditions,
+  .quote-footer,
+  .proposal-page-title,
+  .customer-config-prose h3,
+  .quote-row,
+  .quote-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .proposal-page-title h1,
+  .customer-config-prose h3,
+  .quote-conditions h3 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  .customer-config-prose p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  .quote-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    font-size: 8.7pt !important;
+  }
+  .quote-table thead { display: table-header-group !important; }
+  .quote-table tfoot { display: table-footer-group !important; }
+  .quote-table th { font-size: 7.8pt !important; padding: 6px 5px !important; }
+  .quote-table td { padding: 6px 5px !important; }
+  .quote-table .q-name,
+  .quote-table .q-name b,
+  .quote-table .q-name small,
+  .quote-recipient strong,
+  .quote-meta b,
+  .proposal-page-title p,
+  .customer-config-prose,
+  .quote-commercial-notes,
+  .quote-condition-grid span {
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    white-space: normal !important;
+  }
+  .quote-table .q-money,
+  .quote-total-value { white-space: nowrap !important; }
+
+  .quote-header { gap: 8mm !important; padding-top: 0 !important; padding-bottom: 5mm !important; }
+  .quote-logo { width: 35mm !important; max-width: 35mm !important; }
+  .quote-brand-copy { max-width: 78mm !important; }
+  .quote-meta { min-width: 40mm !important; max-width: 48mm !important; }
+  .quote-meta > div { align-items: flex-start !important; }
+
+  .proposal-page-title { padding: 6mm 0 4mm !important; }
+  .proposal-page-title h1 { font-size: 17pt !important; line-height: 1.16 !important; }
+  .proposal-page-title p { font-size: 9pt !important; line-height: 1.45 !important; }
+
+  .customer-config-prose {
+    padding: 2mm 0 0 !important;
+    font-size: 9.3pt !important;
+    line-height: 1.48 !important;
+  }
+  .customer-config-prose h3 {
+    font-size: 9.7pt !important;
+    line-height: 1.32 !important;
+    margin: 3.2mm 0 1.5mm !important;
+    padding-top: 2.2mm !important;
+  }
+  .customer-config-prose p { margin: 0 0 2.5mm !important; }
+
+  .quote-recipient {
+    grid-template-columns: minmax(0, 1.6fr) minmax(26mm, .7fr) minmax(30mm, .9fr) !important;
+    margin-bottom: 4mm !important;
+  }
+  .quote-recipient > div { min-width: 0 !important; padding: 7px 9px !important; }
+
+  .quote-total-box {
+    width: 66% !important;
+    max-width: 100% !important;
+    margin: 5mm 0 4mm auto !important;
+  }
+  .quote-footer { margin-top: 7mm !important; padding-top: 4mm !important; }
+  .sign-space { height: 12mm !important; }
+
+  /* Decorative bars are in-flow for print so they never cover text after pagination. */
+  .quote-top-accent,
+  .quote-bottom-accent {
+    position: static !important;
+    width: 100% !important;
+    margin: 0 0 3mm !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .quote-bottom-accent { margin: 3mm 0 0 !important; }
+}
