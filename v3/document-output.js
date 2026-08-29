@@ -1,5 +1,5 @@
-// Dedicated customer-document output without popup windows.
-// Print/PDF uses an in-page hidden iframe; Word uses Blob + download anchor.
+// Approved customer documents are exportable only through Print / Save as PDF.
+// No editable Word output is exposed after Admin approval.
 (function () {
   const ABS = (src) => {
     try { return new URL(src, location.href).href; } catch { return src; }
@@ -11,27 +11,9 @@
     return m ? `BG-SUNBOT-${m[1]}-${m[2]}-${m[3]}` : String(state.lastQuote?.quote_id || state.quoteId || "");
   }
 
-  function safeFilePart(value) {
-    return String(value || "")
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[\\/:*?\"<>|]/g, "")
-      .trim()
-      .replace(/\s+/g, "_")
-      .slice(0, 80) || "Sunbot";
-  }
-
-  function documentFileName(mode, sourceDoc, ext) {
-    const customer = sourceDoc?.querySelector(".quote-recipient strong")?.textContent?.trim() || state.customerName || "Khach_hang";
-    const code = sourceDoc?.querySelector(".quote-meta b")?.textContent?.trim() || "";
-    const label = mode === "quote" ? "Bao_gia" : mode === "narrative" ? "Thuyet_minh" : "De_xuat";
-    const codePart = safeFilePart(code.replace(/\//g, "-"));
-    return `Sunbot_${label}_${safeFilePart(customer)}${codePart ? "_" + codePart : ""}.${ext}`;
-  }
-
   function sanitizeClone(node) {
     const clone = node.cloneNode(true);
-    clone.querySelectorAll("script,button,.no-print").forEach((x) => x.remove());
+    clone.querySelectorAll("script,button,.no-print,.admin-price-editor,.admin-model-policy,.approval-rule-strip,.toolbar").forEach((x) => x.remove());
     clone.querySelectorAll("img").forEach((img) => img.setAttribute("src", ABS(img.getAttribute("src") || "")));
     clone.querySelectorAll("[id]").forEach((x) => x.removeAttribute("id"));
     return clone;
@@ -112,15 +94,11 @@
     `;
   }
 
-  function documentHtml(mode, sourceDoc, wordMode = false) {
+  function documentHtml(mode, sourceDoc) {
     const sections = sectionsFor(sourceDoc, mode);
     if (!sections.length) throw new Error("Chưa có nội dung phù hợp để xuất tài liệu này.");
     const content = sections.map((s) => `<section class="doc-section">${sanitizeClone(s).outerHTML}</section>`).join("");
-    const wordCss = wordMode ? `
-      @page WordSection1{size:595.3pt 841.9pt;margin:34pt 39.7pt 36.9pt 39.7pt;mso-paper-source:0}
-      div.WordSection1{page:WordSection1}
-    ` : "";
-    return `<!doctype html><html lang="vi" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${titleFor(mode)}</title><style>${standaloneCss()}${wordCss}</style></head><body><main class="print-doc${wordMode ? " WordSection1" : ""}">${content}</main></body></html>`;
+    return `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${titleFor(mode)}</title><style>${standaloneCss()}</style></head><body><main class="print-doc">${content}</main></body></html>`;
   }
 
   async function verifyApproved(doc) {
@@ -152,7 +130,7 @@
     const frameDoc = frame.contentDocument || frame.contentWindow?.document;
     if (!frameDoc) throw new Error("Trình duyệt không cho tạo vùng in nội bộ.");
     frameDoc.open();
-    frameDoc.write(documentHtml(mode, sourceDoc, false));
+    frameDoc.write(documentHtml(mode, sourceDoc));
     frameDoc.close();
 
     const trigger = () => {
@@ -169,33 +147,10 @@
     else setTimeout(trigger, 250);
   }
 
-  function directDownload(filename, content, mime) {
-    const blob = new Blob(["\ufeff", content], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  }
-
-  async function runOutput(action, mode, sourceDoc) {
+  async function printApproved(mode, sourceDoc) {
     try {
       await verifyApproved(sourceDoc);
-      if (action === "print") {
-        printInFrame(mode, sourceDoc);
-        return;
-      }
-      if (action === "word") {
-        directDownload(
-          documentFileName(mode, sourceDoc, "doc"),
-          documentHtml(mode, sourceDoc, true),
-          "application/msword;charset=utf-8"
-        );
-      }
+      printInFrame(mode, sourceDoc);
     } catch (e) {
       alert(friendlyError(e));
     }
@@ -212,22 +167,15 @@
     toolbar.id = "sunbot-document-output";
     toolbar.className = "document-output-toolbar no-print";
     toolbar.innerHTML = `
-      <div class="document-output-label"><b>Xuất tài liệu A4</b><small>Không mở cửa sổ mới. In/PDF chạy trong vùng in nội bộ; Word tải trực tiếp về máy.</small></div>
+      <div class="document-output-label"><b>In / Lưu PDF A4</b><small>Bản chính thức sau duyệt chỉ xuất qua In hoặc Lưu PDF; không cung cấp định dạng chỉnh sửa.</small></div>
       <div class="document-output-group">
-        <span>In / PDF</span>
-        <button class="btn" data-doc-action="print" data-doc-output="quote">Báo giá</button>
-        <button class="btn secondary" data-doc-action="print" data-doc-output="proposal">Đề xuất</button>
-        <button class="btn secondary" data-doc-action="print" data-doc-output="narrative">Thuyết minh</button>
-      </div>
-      <div class="document-output-group">
-        <span>Tải Word</span>
-        <button class="btn secondary" data-doc-action="word" data-doc-output="quote">Báo giá</button>
-        <button class="btn secondary" data-doc-action="word" data-doc-output="proposal">Đề xuất</button>
-        <button class="btn secondary" data-doc-action="word" data-doc-output="narrative">Thuyết minh</button>
+        <button class="btn" data-doc-output="quote">Báo giá</button>
+        <button class="btn secondary" data-doc-output="proposal">Đề xuất</button>
+        <button class="btn secondary" data-doc-output="narrative">Thuyết minh</button>
       </div>`;
     host.appendChild(toolbar);
-    toolbar.querySelectorAll("[data-doc-action]").forEach((btn) => {
-      btn.onclick = () => runOutput(btn.dataset.docAction, btn.dataset.docOutput, doc);
+    toolbar.querySelectorAll("[data-doc-output]").forEach((btn) => {
+      btn.onclick = () => printApproved(btn.dataset.docOutput, doc);
     });
   }
 
@@ -239,7 +187,7 @@
   style.textContent = `
     .document-output-toolbar{display:grid;grid-template-columns:minmax(210px,1fr) auto;align-items:center;gap:10px 16px;width:100%;padding:10px 12px;border:1px solid rgba(15,118,110,.2);border-radius:11px;background:rgba(15,118,110,.04)}
     .document-output-label{display:grid;gap:1px}.document-output-label small{font-size:11px;color:#667c78;line-height:1.4}
-    .document-output-group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.document-output-group>span{font-size:10px;font-weight:800;color:#607571;text-transform:uppercase;letter-spacing:.05em;margin-right:2px}.document-output-group .btn{width:auto!important;min-width:82px}
+    .document-output-group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.document-output-group .btn{width:auto!important;min-width:82px}
     @media(max-width:920px){.document-output-toolbar{grid-template-columns:1fr}.document-output-group{justify-content:flex-start}}
   `;
   document.head.appendChild(style);
