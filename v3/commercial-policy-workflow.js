@@ -31,8 +31,8 @@
     return 24000000;
   }
 
-  function frequencyFactor() {
-    return Number(state.scaleSessions) === 8 ? 1.5 : 1;
+  function frequencyFactor(sessions = state.scaleSessions) {
+    return Number(sessions) === 8 ? 1.5 : 1;
   }
 
   function progressivePerSessionFee(students) {
@@ -51,9 +51,11 @@
     }, 0);
   }
 
-  function scaleComparisonFee() {
-    const raw = progressivePerSessionFee(state.students) * 36 * frequencyFactor() * programFactor();
-    return Math.max(Math.round(raw), minimumSchoolYearFee());
+  function scaleComparisonFee(sessions = state.scaleSessions) {
+    const factor = frequencyFactor(sessions);
+    const raw = progressivePerSessionFee(state.students) * 36 * factor * programFactor();
+    const frequencyAdjustedMinimum = minimumSchoolYearFee() * factor;
+    return Math.max(Math.round(raw), Math.round(frequencyAdjustedMinimum));
   }
 
   function pointComparisonFee() {
@@ -75,10 +77,13 @@
       commercial_model: selected,
       recommended_model: recommended,
       policy_match: selected === recommended,
+      scale_program: String(state.program || "CORE"),
       scale_sessions_per_month: Number(state.scaleSessions || 4),
       frequency_factor: frequencyFactor(),
       point_comparison_amount: pointAmount,
       scale_comparison_amount: scaleAmount,
+      scale_4_amount: scaleComparisonFee(4),
+      scale_8_amount: scaleComparisonFee(8),
       comparison_difference: Math.abs(pointAmount - scaleAmount),
       cheaper_model: pointAmount === scaleAmount ? "EQUAL" : pointAmount < scaleAmount ? "POINT" : "SCALE",
       model_exception_reason: String(state.modelExceptionReason || "").trim(),
@@ -110,8 +115,6 @@
     if (input) input.oninput = () => persistReason(input.value);
   };
 
-  // Save policy evidence with every approval request. The live backend already persists
-  // exception_reason/notes; the additional structured fields are forward-compatible.
   const baseBridge = bridge;
   bridge = function (mode, subaction, payload = {}, token = state.token) {
     if (mode === "quotationShared" && subaction === "saveSnapshot") {
@@ -126,10 +129,13 @@
         commercial_model: ctx.commercial_model,
         recommended_model: ctx.recommended_model,
         policy_match: ctx.policy_match,
+        scale_program: ctx.scale_program,
         scale_sessions_per_month: ctx.scale_sessions_per_month,
         frequency_factor: ctx.frequency_factor,
         point_comparison_amount: ctx.point_comparison_amount,
         scale_comparison_amount: ctx.scale_comparison_amount,
+        scale_4_amount: ctx.scale_4_amount,
+        scale_8_amount: ctx.scale_8_amount,
         comparison_difference: ctx.comparison_difference,
         cheaper_model: ctx.cheaper_model,
         model_exception_reason: ctx.model_exception_reason,
@@ -148,7 +154,7 @@
     const modelLabel = ctx.commercial_model === "SCALE" ? "Theo quy mô" : "Theo điểm trường";
     const recommendedLabel = ctx.recommended_model === "SCALE" ? "Theo quy mô" : "Theo điểm trường";
     const cheaperLabel = ctx.cheaper_model === "SCALE" ? "Theo quy mô" : ctx.cheaper_model === "POINT" ? "Theo điểm trường" : "Ngang nhau";
-    const txt = `${state.client || "Khách hàng"}\nNgười lập: ${state.createdBy || "-"}\nSố điểm triển khai: ${ctx.deployment_sites}\nTổng số trẻ: ${ctx.learner_count}\nMô hình đang chọn: ${modelLabel}\nKhuyến nghị quy chế: ${recommendedLabel}\nTheo điểm 12 tháng: ${money(ctx.point_comparison_amount)}\nTheo quy mô: ${money(ctx.scale_comparison_amount)}\nPhương án rẻ hơn: ${cheaperLabel}${ctx.policy_match ? "" : `\nLý do ngoại lệ: ${ctx.model_exception_reason || "CHƯA NHẬP"}`}\n\n${lines.map((l) => `${l.name}: ${l.qty} x ${money(l.price)} = ${money(l.qty * l.price)}`).join("\n")}\nTỔNG BÁO GIÁ: ${money(total)}\nTRẠNG THÁI: CHỜ ADMIN DUYỆT`;
+    const txt = `${state.client || "Khách hàng"}\nNgười lập: ${state.createdBy || "-"}\nSố điểm triển khai: ${ctx.deployment_sites}\nTổng số trẻ: ${ctx.learner_count}\nMô hình đang chọn: ${modelLabel}\nKhuyến nghị quy chế: ${recommendedLabel}\nTheo điểm 12 tháng: ${money(ctx.point_comparison_amount)}\nTheo quy mô 4 buổi/tháng: ${money(ctx.scale_4_amount)}\nTheo quy mô 8 buổi/tháng: ${money(ctx.scale_8_amount)}\nPhương án rẻ hơn theo tần suất đang chọn: ${cheaperLabel}${ctx.policy_match ? "" : `\nLý do ngoại lệ: ${ctx.model_exception_reason || "CHƯA NHẬP"}`}\n\n${lines.map((l) => `${l.name}: ${l.qty} x ${money(l.price)} = ${money(l.qty * l.price)}`).join("\n")}\nTỔNG BÁO GIÁ: ${money(total)}\nTRẠNG THÁI: CHỜ ADMIN DUYỆT`;
     try {
       await navigator.clipboard.writeText(txt);
       alert("Đã sao chép tóm tắt nội bộ kèm căn cứ chọn mô hình.");
