@@ -6,7 +6,7 @@ window.SUNBOT_CATALOG = {
   backendUrl:
     "https://docs.google.com/spreadsheets/d/1Er11CKeojfSKWfb9zYGTXSLDWocfYX7d-Gi5Sya2EDg/edit",
   manualUrl:
-    "https://docs.google.com/document/d/1VHaY_nTB0Z9X9hRRbxLuHZo0jTG_Y-LVjDgTR7SYhpk/edit",
+    "https://docs.google.com/document/d/1zV2LWDWXB_oHGSX55Pe59GJ2GCcp4BrG8j0DfR6NbYI/edit",
   policyUrl:
     "https://docs.google.com/document/d/1ff_Lz7A2lgfMNMwMLd3EZuMOAmsQBvmxxVXhlfhkPcE/edit",
   prices: Object.create(null),
