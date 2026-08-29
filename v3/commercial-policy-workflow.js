@@ -1,6 +1,13 @@
 // Persist and enforce the point-vs-scale commercial policy without coupling it to the pricing UI.
 (function () {
   const EXCEPTION_KEY = "sunbot_pricebook_v3_model_exception_reason";
+  const SCALE_TIER_FALLBACK = {
+    SELF_FEE_1P_T1: 4000,
+    SELF_FEE_1P_T2: 3500,
+    SELF_FEE_1P_T3: 3000,
+    SELF_FEE_1P_T4: 2500,
+    SELF_FEE_1P_T5: 2000,
+  };
 
   state.modelExceptionReason = sessionStorage.getItem(EXCEPTION_KEY) || "";
 
@@ -35,6 +42,11 @@
     return Number(sessions) === 8 ? 1.5 : 1;
   }
 
+  function scaleTierRate(code) {
+    const loaded = Number(C.prices?.[code]?.price || 0);
+    return loaded > 0 ? loaded : Number(SCALE_TIER_FALLBACK[code] || 0);
+  }
+
   function progressivePerSessionFee(students) {
     const n = Math.max(0, Number(students || 0));
     const tiers = [
@@ -47,7 +59,7 @@
     return tiers.reduce((sum, [code, from, to]) => {
       if (n < from) return sum;
       const count = Math.max(0, Math.min(n, to) - from + 1);
-      return sum + count * Number(C.prices?.[code]?.price || 0);
+      return sum + count * scaleTierRate(code);
     }, 0);
   }
 
