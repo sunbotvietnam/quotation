@@ -94,6 +94,48 @@
       .quote-footer{display:flex!important;justify-content:space-between!important;align-items:flex-end!important;gap:7mm!important;margin-top:5mm!important;padding-top:3.5mm!important;border-top:1px solid #dce7e4!important;break-inside:avoid;page-break-inside:avoid}
       .quote-footer-note{display:grid!important;gap:.8mm!important}.quote-footer-note>b{font-size:10pt!important;color:#0f766e!important}.quote-footer-note span{font-size:7pt!important}.quote-footer-note small{font-size:6.4pt!important;color:#899793!important}
       .quote-sign{min-width:42mm!important;text-align:center!important}.quote-sign>span,.quote-sign>b{font-size:7pt!important}.sign-space{height:10mm!important}
+
+      /* Compact but professional A4 rhythm: reduce page count without sacrificing readability. */
+      @page{size:A4 portrait;margin:10mm 12mm 11mm}
+      body{font-size:8.6pt;line-height:1.34}
+      .quote-top-accent,.quote-bottom-accent{height:2mm!important;margin:0 0 2mm!important}
+      .quote-bottom-accent{margin:2mm 0 0!important}
+      .quote-header{gap:5mm!important;padding-bottom:3mm!important}
+      .quote-brand-block{gap:3mm!important}
+      .quote-logo{width:30mm!important;max-width:30mm!important}
+      .quote-brand-copy{padding-left:2.3mm!important;max-width:74mm!important}
+      .quote-company{font-size:7pt!important;line-height:1.2!important}
+      .quote-tagline{font-size:6.1pt!important;line-height:1.2!important;margin-top:.7mm!important}
+      .quote-meta{gap:.7mm!important;min-width:36mm!important;max-width:44mm!important}
+      .quote-meta>div{grid-template-columns:13mm minmax(0,1fr)!important;gap:1.4mm!important;padding-bottom:.6mm!important}
+      .quote-meta span{font-size:5.8pt!important}
+      .quote-meta b{font-size:6.3pt!important;line-height:1.18!important}
+      .proposal-page-title,.quote-title-block{padding:3.2mm 0 2.2mm!important}
+      .proposal-eyebrow,.quote-kicker{font-size:6.3pt!important;letter-spacing:.08em!important}
+      .proposal-page-title h1,.quote-title-block h1{font-size:14.2pt!important;line-height:1.1!important;margin:.9mm 0 1.1mm!important}
+      .proposal-page-title p,.quote-title-block p{font-size:7.6pt!important;line-height:1.3!important}
+      .quote-recipient{margin-bottom:2.8mm!important;border-radius:1.6mm!important}
+      .quote-recipient>div{padding:1.6mm 2mm!important}
+      .quote-recipient span{font-size:5.8pt!important;margin-bottom:.45mm!important}
+      .quote-recipient strong{font-size:7.5pt!important;line-height:1.22!important}
+      .quote-intro,.quote-courtesy{font-size:7.8pt!important;line-height:1.34!important;margin-bottom:2mm!important}
+      .customer-config-prose,.config-prose{font-size:8.35pt!important;line-height:1.34!important}
+      .customer-config-prose h3,.config-prose h3{font-size:8.8pt!important;line-height:1.2!important;margin:2.2mm 0 .8mm!important;padding-top:1.3mm!important}
+      .customer-config-prose p,.config-prose p{margin-bottom:1.45mm!important}
+      .quote-table{font-size:7.45pt!important}
+      .quote-table th{padding:1.35mm 1.15mm!important;font-size:6.35pt!important;line-height:1.12!important}
+      .quote-table td{padding:1.45mm 1.15mm!important;line-height:1.2!important}
+      .quote-table .q-name b{font-size:7.45pt!important;line-height:1.2!important}
+      .quote-table .q-name small{margin-top:.4mm!important;font-size:6.1pt!important;line-height:1.16!important}
+      .quote-total-box{gap:3.5mm!important;width:64%!important;margin:2.7mm 0 2.5mm auto!important;padding:2mm 2.4mm!important;border-radius:1.6mm!important}
+      .quote-total-label{gap:.35mm!important}.quote-total-label span{font-size:6.6pt!important}.quote-total-label small{font-size:5.8pt!important;line-height:1.2!important}
+      .quote-total-value{font-size:11.8pt!important}
+      .quote-commercial-notes,.quote-conditions{margin-top:2.2mm!important;padding-top:2mm!important;font-size:7.1pt!important;line-height:1.3!important}
+      .quote-condition-grid{gap:1.7mm 4mm!important}.quote-condition-grid b{font-size:6.8pt!important}.quote-condition-grid span{font-size:6.45pt!important;line-height:1.28!important}
+      .quote-footer{gap:5mm!important;margin-top:3mm!important;padding-top:2.2mm!important}
+      .quote-footer-note{gap:.4mm!important}.quote-footer-note>b{font-size:8.8pt!important}.quote-footer-note span{font-size:6.4pt!important}.quote-footer-note small{font-size:5.9pt!important}
+      .quote-sign{min-width:38mm!important}.quote-sign>span,.quote-sign>b{font-size:6.4pt!important}.sign-space{height:7mm!important}
+
       .no-print,.admin-price-editor,.admin-model-policy,.approval-rule-strip,.toolbar,.btn{display:none!important}
       @media print{body{margin:0!important}.doc-section{width:100%!important}}
     `;
