@@ -2,6 +2,13 @@
 // Ensures 4 vs 8 sessions always differ, including when the annual minimum applies.
 (function () {
   const BASE_SESSIONS_YEAR = 36;
+  const SCALE_TIER_FALLBACK = {
+    SELF_FEE_1P_T1: 4000,
+    SELF_FEE_1P_T2: 3500,
+    SELF_FEE_1P_T3: 3000,
+    SELF_FEE_1P_T4: 2500,
+    SELF_FEE_1P_T5: 2000,
+  };
 
   function factorFor(sessions) {
     return Number(sessions) === 8 ? 1.5 : 1;
@@ -16,6 +23,10 @@
     if (state.program === "CORE") return 30000000;
     return 24000000;
   }
+  function scaleTierRate(code) {
+    const loaded = Number(C.prices?.[code]?.price || 0);
+    return loaded > 0 ? loaded : Number(SCALE_TIER_FALLBACK[code] || 0);
+  }
   function progressiveBase(students) {
     const n = Math.max(0, Number(students || 0));
     const tiers = [
@@ -28,7 +39,7 @@
     return tiers.reduce((sum, [code, from, to]) => {
       if (n < from) return sum;
       const count = Math.max(0, Math.min(n, to) - from + 1);
-      return sum + count * Number(C.prices?.[code]?.price || 0);
+      return sum + count * scaleTierRate(code);
     }, 0);
   }
   function feeFor(sessions) {
@@ -62,12 +73,13 @@
     if (!root || state.commercialModel !== "SCALE") return;
     const f4 = feeFor(4), f8 = feeFor(8), selected = selectedFee();
     const selectedFactor = factorFor(state.scaleSessions);
-    const raw = Math.round(progressiveBase(state.students) * BASE_SESSIONS_YEAR * selectedFactor * programFactor());
+    const perStandardSession = progressiveBase(state.students);
+    const raw = Math.round(perStandardSession * BASE_SESSIONS_YEAR * selectedFactor * programFactor());
     const minimum = Math.round(baseMinimum() * selectedFactor);
 
     const oldPreview = root.querySelector(".scale-preview b");
     if (oldPreview) {
-      oldPreview.textContent = `${money(progressiveBase(state.students))}/lượt chuẩn × 36 lượt chuẩn/năm × hệ số tần suất ${selectedFactor.toFixed(2).replace(".", ",")} × hệ số chương trình ${programFactor().toFixed(2).replace(".", ",")} = ${money(selected)}${selected > raw ? ` · áp dụng mức tối thiểu theo tần suất ${money(minimum)}` : ""}`;
+      oldPreview.textContent = `Phí lũy tiến 1 lượt chuẩn ${money(perStandardSession)} × 36 lượt chuẩn/năm × hệ số tần suất ${selectedFactor.toFixed(2).replace(".", ",")} × hệ số chương trình ${programFactor().toFixed(2).replace(".", ",")} = ${money(selected)}${selected > raw ? ` · áp dụng mức tối thiểu theo tần suất ${money(minimum)}` : ""}`;
     }
 
     const grid = root.querySelector(".comparison-grid");
@@ -89,19 +101,19 @@
       }
     }
 
-    if (!root.querySelector(".frequency-price-audit")) {
-      const host = root.querySelector(".scale-preview") || root.querySelector(".term-controls");
-      if (host) {
-        const audit = document.createElement("div");
-        audit.className = "frequency-price-audit";
-        audit.innerHTML = `
-          <div class="frequency-audit-head"><b>Kiểm tra tần suất & phí năm học</b><small>8 buổi/tháng dùng hệ số 1,50; mức tối thiểu cũng tăng theo cùng hệ số nên không còn trường hợp 4 và 8 buổi bằng giá nhau.</small></div>
-          <div class="frequency-audit-grid">
-            <div class="${Number(state.scaleSessions) === 4 ? "active" : ""}"><span>4 buổi/tháng</span><strong>${money(f4)}</strong><small>Hệ số 1,00 · tối thiểu ${money(baseMinimum())}</small></div>
-            <div class="${Number(state.scaleSessions) === 8 ? "active" : ""}"><span>8 buổi/tháng</span><strong>${money(f8)}</strong><small>Hệ số 1,50 · tối thiểu ${money(Math.round(baseMinimum() * 1.5))}</small></div>
-          </div>`;
-        host.insertAdjacentElement("afterend", audit);
-      }
+    const priorAudit = root.querySelector(".frequency-price-audit");
+    if (priorAudit) priorAudit.remove();
+    const host = root.querySelector(".scale-preview") || root.querySelector(".term-controls");
+    if (host) {
+      const audit = document.createElement("div");
+      audit.className = "frequency-price-audit";
+      audit.innerHTML = `
+        <div class="frequency-audit-head"><b>Kiểm tra tần suất & phí năm học</b><small>8 buổi/tháng dùng hệ số 1,50; mức tối thiểu cũng tăng theo cùng hệ số.</small></div>
+        <div class="frequency-audit-grid">
+          <div class="${Number(state.scaleSessions) === 4 ? "active" : ""}"><span>4 buổi/tháng</span><strong>${money(f4)}</strong><small>Hệ số 1,00 · tối thiểu ${money(baseMinimum())}</small></div>
+          <div class="${Number(state.scaleSessions) === 8 ? "active" : ""}"><span>8 buổi/tháng</span><strong>${money(f8)}</strong><small>Hệ số 1,50 · tối thiểu ${money(Math.round(baseMinimum() * 1.5))}</small></div>
+        </div>`;
+      host.insertAdjacentElement("afterend", audit);
     }
   }
 
