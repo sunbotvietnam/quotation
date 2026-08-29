@@ -3,7 +3,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 
 const read = (path) => fs.readFileSync(path, "utf8");
-const app = read("v3/app.js"), auth = read("v3/auth.js"), catalog = read("v3/catalog.js"), training = read("v3/training-addons.js"), workflow = read("v3/quote-workflow.js"), config = read("v3/configuration-description.js"), commercial = read("v3/commercial-configurator.js"), customerPolish = read("v3/quote-customer-polish.js"), integration = read("v3/SERVER-INTEGRATION.md");
+const app = read("v3/app.js"), auth = read("v3/auth.js"), catalog = read("v3/catalog.js"), training = read("v3/training-addons.js"), workflow = read("v3/quote-workflow.js"), config = read("v3/configuration-description.js"), commercial = read("v3/commercial-configurator.js"), policy = read("v3/commercial-policy-workflow.js"), customerPolish = read("v3/quote-customer-polish.js"), integration = read("v3/SERVER-INTEGRATION.md"), index = read("v3/index.html");
 const tests = [
   ["ID and password login payload", () => assert.match(auth, /login_id: loginId/)],
   ["server identity drives creator", () => assert.match(auth, /state\.user/)],
@@ -20,18 +20,20 @@ const tests = [
   ["support uses fixed 12 36 60 month SKUs", () => { assert.match(commercial, /supportTermMonths/); assert.match(commercial, /SUPPORT_\$\{band\}_\$\{months\}M/); }],
   ["scale pricing is learner-session based", () => { assert.match(commercial, /progressivePerSessionFee/); assert.match(commercial, /\[4, 8\]/); assert.match(commercial, /SCALE_ACTIVE_MONTHS = 9/); }],
   ["8-session plan uses 1.5 frequency factor", () => { assert.match(commercial, /function frequencyFactor/); assert.match(commercial, /=== 8 \? 1\.5 : 1/); assert.match(commercial, /SCALE_BASE_SESSIONS_PER_MONTH = 4/); }],
-  ["site count drives model recommendation", () => { assert.match(commercial, /SITE_COUNT_KEY/); assert.match(commercial, /function modelRecommendation/); assert.match(commercial, />= 2 \? "SCALE" : "POINT"/); }],
-  ["app compares point and scale economics", () => { assert.match(commercial, /function pointComparisonFee/); assert.match(commercial, /function comparisonHtml/); assert.match(commercial, /Phương án rẻ hơn chỉ là thông tin tham khảo/); }],
-  ["multi-site point model multiplies rights and support", () => { assert.match(commercial, /\^RIGHT_/); assert.match(commercial, /qty: Math\.max\(1, Number\(state\.siteCount/); }],
+  ["site count drives model policy", () => { assert.match(commercial, /SITE_COUNT_KEY/); assert.match(commercial, /siteCount/); assert.match(commercial, /Từ 02 điểm trở lên/); }],
+  ["point vs scale comparison exists", () => { assert.match(commercial, /pointComparisonFee/); assert.match(commercial, /scaleSchoolYearFee/); assert.match(commercial, /So sánh nhanh/); }],
   ["scale pricing uses program factors and minimums", () => { assert.match(commercial, /return 0\.7/); assert.match(commercial, /return 1\.2/); assert.match(commercial, /24000000/); assert.match(commercial, /30000000/); }],
   ["scale replaces rights and support", () => { assert.match(commercial, /filter\(\(line\) => !\/\^RIGHT_/); assert.match(commercial, /!\/\^SUPPORT_/); }],
-  ["mandatory Sunbot branding follows site count", () => { assert.match(commercial, /BRAND_DECOR_FORMEX/); assert.match(commercial, /Math\.max\(state\.siteCount/); assert.match(commercial, /Nhận diện Sunbot bắt buộc/); }],
+  ["mandatory Sunbot branding exists", () => { assert.match(commercial, /BRAND_DECOR_FORMEX/); assert.match(commercial, /Math\.max\(state\.siteCount/); assert.match(commercial, /Nhận diện Sunbot bắt buộc/); }],
+  ["policy context is saved with approval request", () => { assert.match(policy, /deployment_sites/); assert.match(policy, /recommended_model/); assert.match(policy, /point_comparison_amount/); assert.match(policy, /scale_comparison_amount/); }],
+  ["policy exception requires a reason", () => { assert.match(policy, /Mô hình đang chọn là ngoại lệ/); assert.match(policy, /model_exception_reason/); assert.match(policy, /next\.exception_reason/); }],
+  ["policy layer is loaded last", () => assert.match(index, /commercial-configurator\.js[\s\S]*commercial-policy-workflow\.js/)],
   ["approval UX uses split workspace", () => assert.match(commercial, /approval-workspace/)],
   ["customer-facing commercial notes remain", () => assert.match(customerPolish, /Lưu ý thương mại/)],
   ["no hardcoded frontend catalog prices", () => assert.doesNotMatch(catalog, /price\s*:\s*\d/)],
-  ["no credential material or legacy login", () => assert.doesNotMatch(app + auth + catalog + workflow + config + commercial, /PASSWORD_HASH|SHARED_PASSWORD|pinLogin|loginPinByEmail|type=["']email/)],
+  ["no credential material or legacy login", () => assert.doesNotMatch(app + auth + catalog + workflow + config + commercial + policy, /PASSWORD_HASH|SHARED_PASSWORD|pinLogin|loginPinByEmail|type=["']email/)],
   ["contract documents backend version", () => assert.match(integration, /2026\.08\.28-v2/)],
-  ["all frontend JavaScript parses", () => { [app,auth,catalog,training,workflow,config,commercial,customerPolish].forEach((src) => new vm.Script(src)); }],
+  ["all frontend JavaScript parses", () => { [app,auth,catalog,training,workflow,config,commercial,policy,customerPolish].forEach((src) => new vm.Script(src)); }],
 ];
 let failures = 0;
 for (const [name, run] of tests) { try { run(); console.log("PASS", name); } catch (error) { failures++; console.error("FAIL", name, error.message); } }
