@@ -19,6 +19,8 @@ const tests = [
   ["rights terms include 12 36 60", () => { assert.match(commercial, /\[12, 36, 60\]/); assert.match(commercial, /RIGHT_CORE_12M/); }],
   ["support uses fixed 12 36 60 month SKUs", () => { assert.match(commercial, /supportTermMonths/); assert.match(commercial, /SUPPORT_\$\{band\}_\$\{months\}M/); }],
   ["scale pricing is learner-session based", () => { assert.match(commercial, /progressivePerSessionFee/); assert.match(commercial, /\[4, 8\]/); assert.match(commercial, /SCALE_ACTIVE_MONTHS = 9/); }],
+  ["8-session plan uses 1.5 frequency factor", () => { assert.match(commercial, /function frequencyFactor/); assert.match(commercial, /=== 8 \? 1\.5 : 1/); assert.match(commercial, /SCALE_BASE_SESSIONS_PER_MONTH = 4/); }],
+  ["point vs scale policy is explicit", () => { assert.match(commercial, /01 điểm triển khai/); assert.match(commercial, /Từ 02 điểm trở lên/); assert.match(commercial, /QA\/audit/); }],
   ["scale pricing uses program factors and minimums", () => { assert.match(commercial, /return 0\.7/); assert.match(commercial, /return 1\.2/); assert.match(commercial, /24000000/); assert.match(commercial, /30000000/); }],
   ["scale replaces rights and support", () => { assert.match(commercial, /filter\(\(line\) => !\/\^RIGHT_/); assert.match(commercial, /!\/\^SUPPORT_/); }],
   ["mandatory Sunbot branding exists", () => { assert.match(commercial, /BRAND_DECOR_FORMEX/); assert.match(commercial, /Math\.max\(1/); assert.match(commercial, /Nhận diện Sunbot bắt buộc/); }],
