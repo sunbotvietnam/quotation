@@ -5,6 +5,7 @@
   const MODEL_KEY = "sunbot_pricebook_v3_commercial_model";
   const SCALE_SESSIONS_KEY = "sunbot_pricebook_v3_scale_sessions";
   const SCALE_ACTIVE_MONTHS = 9;
+  const SCALE_BASE_SESSIONS_PER_MONTH = 4;
   const BRAND_CODE = "BRAND_DECOR_FORMEX";
 
   state.termMonths = Number(sessionStorage.getItem(TERM_KEY) || 36);
@@ -47,6 +48,10 @@
     return 1;
   }
 
+  function frequencyFactor() {
+    return Number(state.scaleSessions) === 8 ? 1.5 : 1;
+  }
+
   function minimumSchoolYearFee() {
     if (state.program === "STEAM") return 18000000;
     if (state.program === "CORE") return 30000000;
@@ -72,7 +77,7 @@
   }
 
   function scaleSchoolYearFee() {
-    const raw = progressivePerSessionFee(state.students) * Number(state.scaleSessions) * SCALE_ACTIVE_MONTHS * programFactor();
+    const raw = progressivePerSessionFee(state.students) * SCALE_BASE_SESSIONS_PER_MONTH * SCALE_ACTIVE_MONTHS * frequencyFactor() * programFactor();
     return Math.max(Math.round(raw), minimumSchoolYearFee());
   }
 
@@ -142,7 +147,7 @@
     let text = String(state.configDescription || "");
     if (state.commercialModel === "SCALE") {
       text = text.replace(/với thời hạn quyền sử dụng[^.]*\./g, `theo mô hình tính phí sử dụng chương trình, nền tảng và hỗ trợ triển khai theo quy mô với tần suất ${state.scaleSessions} buổi/tháng trong năm học.`);
-      text = text.replace(/Gói đồng hành được xác định theo[^.]*\.[^\n]*/g, `Phần quyền sử dụng chương trình, nền tảng và hỗ trợ triển khai được gộp trong phí theo số trẻ và lượt học; không thu thêm Quyền sử dụng và Đồng hành cho cùng phạm vi.`);
+      text = text.replace(/Gói đồng hành được xác định theo[^.]*\.[^\n]*/g, `Phần quyền sử dụng chương trình, nền tảng và hỗ trợ triển khai được gộp trong phí theo quy mô; tần suất 8 buổi/tháng áp hệ số 1,50 thay vì nhân đôi; không thu thêm Quyền sử dụng và Đồng hành cho cùng phạm vi.`);
     } else {
       text = text
         .replace(/với thời hạn quyền sử dụng\s+(?:1|3|5)\s+năm/g, `với thời hạn quyền sử dụng ${state.termMonths} tháng`)
@@ -170,11 +175,13 @@
 
   function scalePreview() {
     const perSession = progressivePerSessionFee(state.students);
-    const raw = Math.round(perSession * state.scaleSessions * SCALE_ACTIVE_MONTHS * programFactor());
+    const baseSessions = SCALE_BASE_SESSIONS_PER_MONTH * SCALE_ACTIVE_MONTHS;
+    const raw = Math.round(perSession * baseSessions * frequencyFactor() * programFactor());
     const finalFee = scaleSchoolYearFee();
-    const factor = programFactor().toFixed(2).replace(".", ",");
+    const program = programFactor().toFixed(2).replace(".", ",");
+    const frequency = frequencyFactor().toFixed(2).replace(".", ",");
     const minimumApplied = finalFee > raw ? ` · áp dụng mức tối thiểu ${money(finalFee)}` : "";
-    return `${money(perSession)}/lượt toàn trường × ${state.scaleSessions * SCALE_ACTIVE_MONTHS} lượt/năm học × hệ số ${factor} = ${money(finalFee)}${minimumApplied}`;
+    return `${money(perSession)}/lượt chuẩn × ${baseSessions} lượt chuẩn/năm học × hệ số tần suất ${frequency} × hệ số chương trình ${program} = ${money(finalFee)}${minimumApplied}`;
   }
 
   function termsPanelHtml() {
@@ -182,12 +189,13 @@
     const point = state.commercialModel === "POINT";
     const brandQty = Math.max(1, Number(state.items?.[BRAND_CODE] || 1));
     return `<section class="panel commercial-terms-panel no-print">
-      <div class="terms-head"><div><span class="ux-eyebrow">BƯỚC 1 · MÔ HÌNH & THỜI HẠN</span><h3>Điều kiện thương mại</h3><p class="help">Chọn mô hình trước. Hệ thống tự loại các dòng không được thu đồng thời.</p></div><div class="ux-total"><small>Tạm tính hiện tại</small><strong>${money(total)}</strong></div></div>
+      <div class="terms-head"><div><span class="ux-eyebrow">BƯỚC 1 · MÔ HÌNH & THỜI HẠN</span><h3>Điều kiện thương mại</h3><p class="help">Chọn mô hình theo cấu trúc triển khai, không chỉ theo phương án rẻ hơn.</p></div><div class="ux-total"><small>Tạm tính hiện tại</small><strong>${money(total)}</strong></div></div>
+      <div class="model-policy-note"><b>Quy tắc:</b> 01 điểm triển khai mặc định theo điểm trường. Từ 02 điểm trở lên mặc định theo quy mô toàn hệ thống. Chỉ báo nhiều điểm độc lập khi mỗi điểm có tài khoản học liệu, đầu mối vận hành, phạm vi QA/audit và hỗ trợ riêng; ngoại lệ cần Admin duyệt.</div>
       <div class="commercial-model-grid">
-        <button type="button" class="commercial-model-card ${point?"active":""}" data-model="POINT"><b>Theo điểm trường</b><span>Quyền sử dụng + Đồng hành theo kỳ hạn</span><small>12 / 36 / 60 tháng</small></button>
-        <button type="button" class="commercial-model-card ${!point?"active":""}" data-model="SCALE"><b>Theo quy mô trẻ & lượt học</b><span>Phí sử dụng chương trình, nền tảng và hỗ trợ triển khai</span><small>Lũy tiến theo số trẻ thực tế</small></button>
+        <button type="button" class="commercial-model-card ${point?"active":""}" data-model="POINT"><b>Theo điểm trường</b><span>Quyền sử dụng + Đồng hành theo kỳ hạn</span><small>01 đơn vị sử dụng chương trình · 01 phạm vi QA/audit</small></button>
+        <button type="button" class="commercial-model-card ${!point?"active":""}" data-model="SCALE"><b>Theo quy mô trẻ & lượt học</b><span>Phí sử dụng chương trình, nền tảng và hỗ trợ triển khai</span><small>Phù hợp đa điểm / toàn hệ thống</small></button>
       </div>
-      ${point ? `<div class="term-controls"><div class="term-control"><label>Thời hạn quyền sử dụng</label><div class="segmented">${monthSeg("data-term-months",state.termMonths)}</div></div><div class="term-control"><label>Thời hạn đồng hành</label><div class="segmented">${monthSeg("data-support-term",state.supportTermMonths)}</div><small>Không bán tháng lẻ; kỳ 36/60 tháng có ưu đãi cam kết dài hạn.</small></div></div><div class="model-rule-note"><b>Theo điểm trường:</b> Quyền sử dụng và Đồng hành là hai cấu phần riêng.</div>` : `<div class="term-controls"><div class="term-control"><label>Số trẻ tham gia</label><div class="scale-number"><strong>${Number(state.students||0).toLocaleString("vi-VN")}</strong><span>trẻ</span></div><small>Chỉnh số trẻ ở phần thông tin cấu hình bên dưới.</small></div><div class="term-control"><label>Tần suất triển khai</label><div class="segmented">${sessionSeg()}</div><small>Tính trên 9 tháng hoạt động/năm học: 4 buổi = 36 lượt; 8 buổi = 72 lượt/trẻ.</small></div></div><div class="scale-preview"><b>${scalePreview()}</b><small>Lũy tiến theo lượt: 1–150 trẻ 4.000đ; 151–300 3.500đ; 301–500 3.000đ; 501–800 2.500đ; trên 800 2.000đ/trẻ/lượt phần tăng thêm.</small></div><div class="model-rule-note"><b>Theo quy mô trẻ & lượt học:</b> phí này thay thế Quyền sử dụng và Đồng hành cho cùng phạm vi. Thiết bị, học cụ, đào tạo, sát hạch và nhận diện vẫn tính riêng.</div>`}
+      ${point ? `<div class="term-controls"><div class="term-control"><label>Thời hạn quyền sử dụng</label><div class="segmented">${monthSeg("data-term-months",state.termMonths)}</div></div><div class="term-control"><label>Thời hạn đồng hành</label><div class="segmented">${monthSeg("data-support-term",state.supportTermMonths)}</div><small>Không bán tháng lẻ; kỳ 36/60 tháng có ưu đãi cam kết dài hạn.</small></div></div><div class="model-rule-note"><b>Theo điểm trường:</b> mỗi điểm là một đơn vị sử dụng chương trình với tài khoản học liệu chính, đầu mối vận hành và phạm vi QA/audit riêng.</div>` : `<div class="term-controls"><div class="term-control"><label>Số trẻ tham gia</label><div class="scale-number"><strong>${Number(state.students||0).toLocaleString("vi-VN")}</strong><span>trẻ</span></div><small>Chỉnh số trẻ ở phần thông tin cấu hình bên dưới.</small></div><div class="term-control"><label>Tần suất triển khai</label><div class="segmented">${sessionSeg()}</div><small>4 buổi/tháng = hệ số 1,00 · 8 buổi/tháng = hệ số 1,50; không nhân đôi.</small></div></div><div class="scale-preview"><b>${scalePreview()}</b><small>Lũy tiến theo lượt chuẩn: 1–150 trẻ 4.000đ; 151–300 3.500đ; 301–500 3.000đ; 501–800 2.500đ; trên 800 2.000đ/trẻ/lượt phần tăng thêm.</small></div><div class="model-rule-note"><b>Theo quy mô trẻ & lượt học:</b> phí này thay thế Quyền sử dụng và Đồng hành cho cùng phạm vi. Thiết bị, học cụ, đào tạo, sát hạch và nhận diện vẫn tính riêng.</div>`}
       <div class="brand-config"><div><b>Nhận diện Sunbot bắt buộc</b><small>Tối thiểu 01 bộ cho lớp/phòng hoặc điểm triển khai chính thức.</small></div><div class="brand-stepper"><button type="button" data-brand-step="-1">−</button><strong>${brandQty}</strong><span>bộ</span><button type="button" data-brand-step="1">+</button></div></div>
     </section>`;
   }
@@ -250,6 +258,7 @@
   style.textContent = `
     .commercial-terms-panel{margin-bottom:14px;border:1px solid rgba(15,118,110,.18);background:linear-gradient(180deg,rgba(15,118,110,.035),#fff)}
     .terms-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:14px}.terms-head h3{margin:3px 0 4px}.ux-eyebrow{font-size:10px;font-weight:850;letter-spacing:.1em;opacity:.65}.ux-total{text-align:right;white-space:nowrap}.ux-total small{display:block;opacity:.65}.ux-total strong{font-size:20px}
+    .model-policy-note{margin:0 0 12px;padding:10px 12px;border-radius:9px;background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.13);font-size:12px;line-height:1.5}
     .commercial-model-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.commercial-model-card{text-align:left;padding:13px 14px;border-radius:12px;border:1px solid rgba(0,0,0,.12);background:#fff;display:grid;gap:4px;cursor:pointer}.commercial-model-card.active{border-color:rgba(15,118,110,.5);box-shadow:0 0 0 2px rgba(15,118,110,.08);background:rgba(15,118,110,.035)}.commercial-model-card span,.commercial-model-card small{font-size:12px}.commercial-model-card small{opacity:.68}
     .term-controls{display:grid;grid-template-columns:1fr 1fr;gap:14px}.term-control>label{display:block;font-weight:750;margin-bottom:7px}.segmented{display:flex;border:1px solid rgba(0,0,0,.12);border-radius:10px;overflow:hidden;width:max-content;max-width:100%}.segmented button{border:0;border-right:1px solid rgba(0,0,0,.1);padding:9px 15px;background:#fff;cursor:pointer}.segmented button:last-child{border-right:0}.segmented button.active{font-weight:800;background:rgba(15,118,110,.11)}
     .scale-number{display:flex;gap:7px;align-items:baseline}.scale-number strong{font-size:22px}.scale-preview,.model-rule-note{margin-top:13px;padding:10px 12px;border-radius:9px;background:rgba(0,0,0,.035);font-size:12px;line-height:1.5}.scale-preview{display:grid;gap:4px;background:rgba(15,118,110,.07)}
