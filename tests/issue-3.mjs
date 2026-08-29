@@ -3,7 +3,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 
 const read = (path) => fs.readFileSync(path, "utf8");
-const app = read("v3/app.js"), auth = read("v3/auth.js"), catalog = read("v3/catalog.js"), training = read("v3/training-addons.js"), workflow = read("v3/quote-workflow.js"), config = read("v3/configuration-description.js"), commercial = read("v3/commercial-configurator.js"), policy = read("v3/commercial-policy-workflow.js"), adminEditor = read("v3/admin-approval-editor.js"), customerPolish = read("v3/quote-customer-polish.js"), integration = read("v3/SERVER-INTEGRATION.md"), index = read("v3/index.html");
+const app = read("v3/app.js"), auth = read("v3/auth.js"), catalog = read("v3/catalog.js"), training = read("v3/training-addons.js"), workflow = read("v3/quote-workflow.js"), config = read("v3/configuration-description.js"), commercial = read("v3/commercial-configurator.js"), policy = read("v3/commercial-policy-workflow.js"), adminEditor = read("v3/admin-approval-editor.js"), adminView = read("v3/admin-view-mode.js"), printA4 = read("v3/print-a4.css"), customerPolish = read("v3/quote-customer-polish.js"), integration = read("v3/SERVER-INTEGRATION.md"), index = read("v3/index.html");
 const tests = [
   ["ID and password login payload", () => assert.match(auth, /login_id: loginId/)],
   ["server identity drives creator", () => assert.match(auth, /state\.user/)],
@@ -33,11 +33,17 @@ const tests = [
   ["admin camp event cap is 5 percent", () => { assert.match(adminEditor, /discount <= 0\.05/); assert.match(adminEditor, /50 triệu/); }],
   ["special approval requires reason", () => { assert.match(adminEditor, /requiresSpecialReason/); assert.match(adminEditor, /Hãy ghi rõ lý do/); }],
   ["admin revision preserves quote id", () => { assert.match(adminEditor, /quote_id:q\.quote_id/); assert.match(adminEditor, /saveSnapshot/); }],
-  ["admin editor is loaded last", () => assert.match(index, /commercial-policy-workflow\.js[\s\S]*admin-approval-editor\.js/)],
+  ["A4 print uses physical page margins", () => { assert.match(printA4, /@page\s*\{\s*size:\s*A4 portrait;\s*margin:\s*12mm 14mm/); assert.match(printA4, /customer-proposal-page/); }],
+  ["long proposal pages can fragment naturally", () => { assert.match(printA4, /customer-proposal-narrative[\s\S]*break-inside:\s*auto/); assert.match(printA4, /orphans:\s*3/); assert.match(printA4, /widows:\s*3/); }],
+  ["print tables repeat header and protect rows", () => { assert.match(printA4, /table-header-group/); assert.match(printA4, /quote-table tr/); assert.match(printA4, /page-break-inside:\s*avoid/); }],
+  ["admin employee preview exists", () => { assert.match(adminView, /Xem như Nhân viên/); assert.match(adminView, /Về Admin/); assert.match(adminView, /Hoàng Nhung/); assert.match(adminView, /Minh Thu/); assert.match(adminView, /Lê Dung/); }],
+  ["employee preview blocks server writes", () => { assert.match(adminView, /saveSnapshot/); assert.match(adminView, /approveQuote/); assert.match(adminView, /rejectQuote/); assert.match(adminView, /chế độ xem thử Nhân viên/i); }],
+  ["employee preview filters quote list", () => assert.match(adminView, /subaction === "listQuotes"/)],
+  ["print and admin preview layers are loaded last", () => { assert.match(index, /retail\.css[\s\S]*print-a4\.css/); assert.match(index, /admin-approval-editor\.js[\s\S]*admin-view-mode\.js/); }],
   ["customer-facing commercial notes remain", () => assert.match(customerPolish, /Lưu ý thương mại/)],
   ["no hardcoded frontend catalog prices", () => assert.doesNotMatch(catalog, /price\s*:\s*\d/)],
-  ["no credential material or legacy login", () => assert.doesNotMatch(app + auth + catalog + workflow + config + commercial + policy + adminEditor, /PASSWORD_HASH|SHARED_PASSWORD|pinLogin|loginPinByEmail|type=["']email/)],
-  ["all frontend JavaScript parses", () => { [app,auth,catalog,training,workflow,config,commercial,policy,adminEditor,customerPolish].forEach((src) => new vm.Script(src)); }],
+  ["no credential material or legacy login", () => assert.doesNotMatch(app + auth + catalog + workflow + config + commercial + policy + adminEditor + adminView, /PASSWORD_HASH|SHARED_PASSWORD|pinLogin|loginPinByEmail|type=["']email/)],
+  ["all frontend JavaScript parses", () => { [app,auth,catalog,training,workflow,config,commercial,policy,adminEditor,adminView,customerPolish].forEach((src) => new vm.Script(src)); }],
 ];
 let failures = 0;
 for (const [name, run] of tests) { try { run(); console.log("PASS", name); } catch (error) { failures++; console.error("FAIL", name, error.message); } }
