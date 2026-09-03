@@ -122,7 +122,7 @@
       injectModeControls();
       injectPreviewBanner();
       if (isEmployeePreview()) {
-        document.querySelectorAll("#saveQuote,[data-approve],[data-reject],#detailApprove,#detailReject,#admin-save-revision,#admin-save-approve,#admin-approve-unchanged,#admin-return-changes").forEach((el) => {
+        document.querySelectorAll("#saveQuote,[data-approve],[data-reject],#detailApprove,#detailReject,#v4-approve-unchanged,#v4-revise-approve,#v4-request-changes").forEach((el) => {
           el.disabled = true;
           el.title = "Chế độ xem thử Nhân viên không ghi dữ liệu lên máy chủ.";
         });
@@ -131,11 +131,11 @@
     return result;
   };
 
-  // This layer is loaded last so it wraps the fully composed bridge stack.
+  // This layer wraps the shared bridge and blocks every write path, including V4.
   const baseBridge = bridge;
   bridge = async function (mode, subaction, payload = {}, token = state.token) {
     if (isEmployeePreview() && mode === "quotationShared") {
-      const blocked = ["saveSnapshot", "approveQuote", "rejectQuote"];
+      const blocked = ["saveSnapshot", "approveQuote", "rejectQuote", "requestChanges", "adminReviseQuote"];
       if (blocked.includes(String(subaction || ""))) {
         throw new Error("Đây là chế độ xem thử Nhân viên. Hãy chuyển về Góc nhìn Admin hoặc đăng nhập bằng tài khoản nhân viên để ghi dữ liệu.");
       }
@@ -160,7 +160,6 @@
   `;
   document.head.appendChild(style);
 
-  // If an already-restored Admin session exists when this script loads.
   rememberActualIdentity();
   applyModeIdentity();
 })();
