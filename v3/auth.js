@@ -2,7 +2,7 @@
 // IMPORTANT: no real passwords or password hashes belong in this public frontend.
 (function () {
   const LOGIN_KEY = "sunbot_pricebook_v3_login_id";
-  const MANAGERS = ["Hoàng Nhung", "Minh Thu", "Lê Dung"];
+  const MANAGERS = ["Hoàng Nhung", "Minh Thu", "Lê Dung", "Vũ Phương Thảo"];
   state.loginId = sessionStorage.getItem(LOGIN_KEY) || "";
 
   // Quotation workflow no longer uses or displays geographic regions.
