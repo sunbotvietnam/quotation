@@ -8,6 +8,7 @@
     { id: "Nhung", name: "Hoàng Nhung" },
     { id: "Thu", name: "Minh Thu" },
     { id: "Dung", name: "Lê Dung" },
+    { id: "thaovu", name: "Vũ Phương Thảo" },
   ];
 
   state.adminViewMode = sessionStorage.getItem(MODE_KEY) || "ADMIN";
@@ -122,7 +123,7 @@
       injectModeControls();
       injectPreviewBanner();
       if (isEmployeePreview()) {
-        document.querySelectorAll("#saveQuote,[data-approve],[data-reject],#detailApprove,#detailReject,#v4-approve-unchanged,#v4-revise-approve,#v4-request-changes").forEach((el) => {
+        document.querySelectorAll("#saveQuote,[data-approve],[data-reject],#detailApprove,#detailReject,#v4-approve-unchanged,#v4-revise-approve,#v4-request-changes,#approval-admin-save,#approval-admin-save-approve,#approval-admin-approve-unchanged,#approval-admin-return").forEach((el) => {
           el.disabled = true;
           el.title = "Chế độ xem thử Nhân viên không ghi dữ liệu lên máy chủ.";
         });
@@ -131,7 +132,6 @@
     return result;
   };
 
-  // This layer wraps the shared bridge and blocks every write path, including V4.
   const baseBridge = bridge;
   bridge = async function (mode, subaction, payload = {}, token = state.token) {
     if (isEmployeePreview() && mode === "quotationShared") {
