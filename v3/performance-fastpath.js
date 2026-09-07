@@ -1,6 +1,5 @@
 // Sunbot Quotation V3 — client fast path.
-// Goals: fewer Apps Script round-trips, request coalescing, short read cache,
-// and immediate invalidation after any write so approval state stays correct.
+// Fewer Apps Script round-trips, request coalescing and employee-specific quote detail fast read.
 (function () {
   const baseBridge = bridge;
   const inflight = new Map();
@@ -10,8 +9,9 @@
     bootstrapFast: 30000,
     bootstrap: 30000,
     catalog: 120000,
-    listQuotes: 15000,
+    listQuotes: 20000,
     getQuote: 30000,
+    getQuoteFast: 300000,
   });
 
   function stablePayload(payload) {
@@ -31,17 +31,28 @@
     return mode === "quotationShared" && Object.prototype.hasOwnProperty.call(READ_TTL, String(subaction || ""));
   }
 
+  function isQuoteReadKey(key) {
+    return key.startsWith("quotationShared|listQuotes|") ||
+      key.startsWith("quotationShared|getQuote|") ||
+      key.startsWith("quotationShared|getQuoteFast|");
+  }
+
   function invalidateQuotationReads() {
-    for (const key of Array.from(memoryCache.keys())) {
-      if (key.startsWith("quotationShared|listQuotes|") || key.startsWith("quotationShared|getQuote|")) memoryCache.delete(key);
-    }
-    for (const key of Array.from(inflight.keys())) {
-      if (key.startsWith("quotationShared|listQuotes|") || key.startsWith("quotationShared|getQuote|")) inflight.delete(key);
-    }
+    for (const key of Array.from(memoryCache.keys())) if (isQuoteReadKey(key)) memoryCache.delete(key);
+    for (const key of Array.from(inflight.keys())) if (isQuoteReadKey(key)) inflight.delete(key);
+  }
+
+  function routedAction(mode, action) {
+    if (mode !== "quotationShared") return action;
+    // Employee detail view is read-only and can use the targeted backend read.
+    // Admin keeps the authoritative full bundle because review/edit needs all workflow metadata.
+    if (action === "getQuote" && String(state.role || "").toUpperCase() !== "ADMIN") return "getQuoteFast";
+    return action;
   }
 
   bridge = function (mode, subaction, payload = {}, token = state.token) {
-    const action = String(subaction || "");
+    const requestedAction = String(subaction || "");
+    const action = routedAction(mode, requestedAction);
     const read = isRead(mode, action);
     const key = cacheKey(mode, action, payload, token);
 
@@ -51,16 +62,24 @@
       if (cached) memoryCache.delete(key);
       if (inflight.has(key)) return inflight.get(key);
     } else if (mode === "quotationShared") {
-      // Approval, revisions, save and export can change status/audit-visible state.
+      // Saves, revisions, approval and export may change quote-visible state.
       invalidateQuotationReads();
     }
 
     const request = baseBridge(mode, action, payload, token)
       .then((result) => {
-        if (read) {
-          memoryCache.set(key, { value: result, expiresAt: Date.now() + Number(READ_TTL[action] || 0) });
-        }
+        if (read) memoryCache.set(key, { value: result, expiresAt: Date.now() + Number(READ_TTL[action] || 0) });
         return result;
+      })
+      .catch((error) => {
+        // Safe compatibility fallback while Apps Script deployment is propagating.
+        if (action === "getQuoteFast" && requestedAction === "getQuote") {
+          return baseBridge(mode, "getQuote", payload, token).then((result) => {
+            memoryCache.set(key, { value: result, expiresAt: Date.now() + 30000 });
+            return result;
+          });
+        }
+        throw error;
       })
       .finally(() => {
         if (read) inflight.delete(key);
@@ -94,13 +113,12 @@
       applyBoot(fast);
       return fast;
     } catch (error) {
-      // Compatibility fallback while a backend deployment is propagating.
       return legacyLoadBackend(token);
     }
   };
 
   window.SUNBOT_QUOTATION_PERFORMANCE = {
-    version: "2026.09.07-fastpath-v1",
+    version: "2026.09.07-employee-fast-v2",
     clearReadCache: invalidateQuotationReads,
   };
 })();
