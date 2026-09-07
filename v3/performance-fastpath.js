@@ -1,17 +1,21 @@
-// Sunbot Quotation V3 — client fast path.
-// Fewer Apps Script round-trips, request coalescing and employee-specific quote detail fast read.
+// Sunbot Quotation V3 — published snapshot fast path.
+// Employees open APPROVED quotes from immutable published snapshots, not live Sheets.
 (function () {
   const baseBridge = bridge;
   const inflight = new Map();
   const memoryCache = new Map();
+  const publicationCache = new Map();
+  let publicationUserKey = "";
 
   const READ_TTL = Object.freeze({
     bootstrapFast: 30000,
     bootstrap: 30000,
     catalog: 120000,
     listQuotes: 20000,
+    listPublishedQuotes: 60000,
     getQuote: 30000,
     getQuoteFast: 300000,
+    getPublishedQuote: 300000,
   });
 
   function stablePayload(payload) {
@@ -33,8 +37,56 @@
 
   function isQuoteReadKey(key) {
     return key.startsWith("quotationShared|listQuotes|") ||
+      key.startsWith("quotationShared|listPublishedQuotes|") ||
       key.startsWith("quotationShared|getQuote|") ||
-      key.startsWith("quotationShared|getQuoteFast|");
+      key.startsWith("quotationShared|getQuoteFast|") ||
+      key.startsWith("quotationShared|getPublishedQuote|");
+  }
+
+  function localStorageKey() {
+    return publicationUserKey ? `sunbot:published-quotes:${publicationUserKey}` : "";
+  }
+
+  function loadLocalPublications() {
+    publicationCache.clear();
+    const key = localStorageKey();
+    if (!key) return;
+    try {
+      const raw = JSON.parse(localStorage.getItem(key) || "{}");
+      const items = Array.isArray(raw.items) ? raw.items : [];
+      items.forEach((snapshot) => {
+        const q = snapshot?.quote || {};
+        if (String(q.status || "").toUpperCase() === "APPROVED" && q.quote_id) publicationCache.set(String(q.quote_id), snapshot);
+      });
+    } catch {}
+  }
+
+  function persistLocalPublications(items) {
+    const key = localStorageKey();
+    if (!key) return;
+    try {
+      localStorage.setItem(key, JSON.stringify({saved_at:Date.now(),items:Array.from(items || [])}));
+    } catch {}
+  }
+
+  function absorbPublications(result) {
+    const items = Array.isArray(result) ? result : (Array.isArray(result?.items) ? result.items : []);
+    items.forEach((snapshot) => {
+      const q = snapshot?.quote || {};
+      if (!q.quote_id || String(q.status || "").toUpperCase() !== "APPROVED") return;
+      const id = String(q.quote_id);
+      const previous = publicationCache.get(id);
+      if (!previous || Number(q.version || 1) >= Number(previous?.quote?.version || 1)) publicationCache.set(id, snapshot);
+    });
+    persistLocalPublications(publicationCache.values());
+  }
+
+  function prefetchPublished(token) {
+    if (String(state.role || "").toUpperCase() === "ADMIN") return;
+    // Background only: never blocks login or normal navigation.
+    bridge("quotationShared", "listPublishedQuotes", {}, token)
+      .then(absorbPublications)
+      .catch(() => {});
   }
 
   function invalidateQuotationReads() {
@@ -44,14 +96,20 @@
 
   function routedAction(mode, action) {
     if (mode !== "quotationShared") return action;
-    // Employee detail view is read-only and can use the targeted backend read.
-    // Admin keeps the authoritative full bundle because review/edit needs all workflow metadata.
-    if (action === "getQuote" && String(state.role || "").toUpperCase() !== "ADMIN") return "getQuoteFast";
+    if (action === "getQuote" && String(state.role || "").toUpperCase() !== "ADMIN") return "getPublishedQuote";
     return action;
   }
 
   bridge = function (mode, subaction, payload = {}, token = state.token) {
     const requestedAction = String(subaction || "");
+
+    // Instant path: once an approved snapshot is locally available, clicking "Xem" makes no network request.
+    if (mode === "quotationShared" && requestedAction === "getQuote" && String(state.role || "").toUpperCase() !== "ADMIN") {
+      const quoteId = String(payload?.quote_id || "");
+      const published = publicationCache.get(quoteId);
+      if (published) return Promise.resolve(published);
+    }
+
     const action = routedAction(mode, requestedAction);
     const read = isRead(mode, action);
     const key = cacheKey(mode, action, payload, token);
@@ -62,20 +120,27 @@
       if (cached) memoryCache.delete(key);
       if (inflight.has(key)) return inflight.get(key);
     } else if (mode === "quotationShared") {
-      // Saves, revisions, approval and export may change quote-visible state.
       invalidateQuotationReads();
     }
 
     const request = baseBridge(mode, action, payload, token)
       .then((result) => {
         if (read) memoryCache.set(key, { value: result, expiresAt: Date.now() + Number(READ_TTL[action] || 0) });
+        if (action === "listPublishedQuotes") absorbPublications(result);
+        if ((action === "getPublishedQuote" || action === "getQuoteFast") && result?.quote?.quote_id && String(result.quote.status || "").toUpperCase() === "APPROVED") {
+          publicationCache.set(String(result.quote.quote_id), result);
+          persistLocalPublications(publicationCache.values());
+        }
         return result;
       })
       .catch((error) => {
-        // Safe compatibility fallback while Apps Script deployment is propagating.
-        if (action === "getQuoteFast" && requestedAction === "getQuote") {
-          return baseBridge(mode, "getQuote", payload, token).then((result) => {
-            memoryCache.set(key, { value: result, expiresAt: Date.now() + 30000 });
+        // Safe compatibility fallback during backend propagation.
+        if (action === "getPublishedQuote" && requestedAction === "getQuote") {
+          return baseBridge(mode, "getQuoteFast", payload, token).catch(() => baseBridge(mode, "getQuote", payload, token)).then((result) => {
+            if (result?.quote?.quote_id && String(result.quote.status || "").toUpperCase() === "APPROVED") {
+              publicationCache.set(String(result.quote.quote_id), result);
+              persistLocalPublications(publicationCache.values());
+            }
             return result;
           });
         }
@@ -101,6 +166,8 @@
     if (state.role !== "ADMIN") {
       state.createdBy = state.user.display_name;
       sessionStorage.setItem(CREATOR_KEY, state.createdBy);
+      publicationUserKey = String(state.loginId || state.createdBy || "").toLowerCase();
+      loadLocalPublications();
     }
   }
 
@@ -111,14 +178,18 @@
       if (!fast?.catalog?.items?.length) throw new Error("Fast bootstrap chưa có catalog.");
       applyBackendCatalog(fast.catalog);
       applyBoot(fast);
+      prefetchPublished(token);
       return fast;
     } catch (error) {
-      return legacyLoadBackend(token);
+      const result = await legacyLoadBackend(token);
+      try { prefetchPublished(token); } catch {}
+      return result;
     }
   };
 
   window.SUNBOT_QUOTATION_PERFORMANCE = {
-    version: "2026.09.07-employee-fast-v2",
+    version: "2026.09.07-published-snapshot-v1",
     clearReadCache: invalidateQuotationReads,
+    refreshPublished: () => prefetchPublished(state.token),
   };
 })();
