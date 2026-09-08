@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sunbotvietnam.github.io/quotation/schemas/quotation-document-payload.schema.json",
+  "title": "Sunbot Quotation Document Payload",
+  "type": "object",
+  "required": ["quote_id", "quote_version", "document_type", "school", "commercial"],
+  "properties": {
+    "quote_id": {"type": "string"},
+    "quote_version": {"type": "integer", "minimum": 1},
+    "request_id": {"type": ["string", "null"]},
+    "document_type": {"enum": ["TRAINING_QUOTE", "SOLUTION_QUOTE", "STANDALONE_QUOTE", "REPAIR_ESTIMATE", "SOLUTION_PROPOSAL"]},
+    "template_key": {"type": "string"},
+    "document_title": {"type": "string"},
+    "subtitle": {"type": ["string", "null"]},
+    "school": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string"},
+        "address": {"type": ["string", "null"]},
+        "contact_name": {"type": ["string", "null"]},
+        "contact_role": {"type": ["string", "null"]},
+        "phone": {"type": ["string", "null"]},
+        "school_type": {"type": ["string", "null"]},
+        "legacy_school": {"type": "boolean"}
+      }
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "sale_notes": {"type": ["string", "null"]},
+        "admin_notes": {"type": ["string", "null"]},
+        "existing_assets": {"type": ["string", "null"]},
+        "teacher_status": {"type": ["string", "null"]},
+        "target_start_date": {"type": ["string", "null"]}
+      }
+    },
+    "commercial": {
+      "type": "object",
+      "required": ["currency", "lines", "subtotal", "total"],
+      "properties": {
+        "currency": {"const": "VND"},
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "quantity", "unit", "unit_price", "line_total", "role"],
+            "properties": {
+              "item_id": {"type": ["string", "null"]},
+              "name": {"type": "string"},
+              "description": {"type": ["string", "null"]},
+              "quantity": {"type": "number"},
+              "unit": {"type": "string"},
+              "unit_price": {"type": "number"},
+              "line_total": {"type": "number"},
+              "role": {"enum": ["CORE", "RECOMMENDED", "CUSTOM"]},
+              "sort_order": {"type": "integer"}
+            }
+          }
+        },
+        "subtotal": {"type": "number"},
+        "discount_percent": {"type": "number", "minimum": 0},
+        "discount_amount": {"type": "number", "minimum": 0},
+        "total": {"type": "number"},
+        "vat_note": {"type": ["string", "null"]},
+        "payment_note": {"type": ["string", "null"]},
+        "validity_note": {"type": ["string", "null"]}
+      }
+    },
+    "training": {
+      "type": ["object", "null"],
+      "properties": {
+        "delivery_mode": {"enum": ["PRIVATE", "SHARED", "MIXED"]},
+        "teacher_count": {"type": ["integer", "null"]},
+        "subjects": {"type": ["integer", "null"]},
+        "scope": {"type": ["string", "null"]},
+        "schedule_note": {"type": ["string", "null"]},
+        "assessment_note": {"type": ["string", "null"]}
+      }
+    },
+    "repair": {
+      "type": ["object", "null"],
+      "properties": {
+        "diagnosis_summary": {"type": ["string", "null"]},
+        "estimate_is_provisional": {"type": "boolean"},
+        "variation_note": {"type": ["string", "null"]}
+      }
+    }
+  }
+}
