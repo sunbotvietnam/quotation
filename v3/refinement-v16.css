@@ -1,0 +1,53 @@
+/* Sunbot quotation refinement V16 — print colors + richer document hierarchy. */
+.billing-print-stage,.billing-print-stage *,#billing-print-stage,#billing-print-stage *,
+.quote-paper,.quote-paper *{
+  -webkit-print-color-adjust:exact!important;
+  print-color-adjust:exact!important;
+}
+.search-result em{display:block;margin-top:3px;color:#78908b;font-style:normal;font-size:10px;line-height:1.35;max-width:580px}
+.doc-paper .narrative-body h3{
+  margin:16px 0 8px;
+  padding:7px 10px;
+  border-left:3px solid #f97316;
+  background:#eef8f6;
+  color:#0f766e;
+  border-radius:0 7px 7px 0;
+  font-size:13.5px;
+  line-height:1.35;
+}
+.doc-paper .narrative-body p{color:#334155;line-height:1.62}
+
+@media print{
+  #billing-print-stage,#billing-print-stage *{
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+    color-adjust:exact!important;
+  }
+  #billing-print-stage .quote-paper{background:#fff!important;color:#1f2937!important}
+  #billing-print-stage .quote-accent{background:linear-gradient(90deg,#f97316 0%,#f97316 34%,#0f766e 34%,#0f766e 100%)!important}
+  #billing-print-stage .quote-title span{color:#f97316!important}
+  #billing-print-stage .quote-title h1{color:#0f766e!important}
+  #billing-print-stage .quote-brand b{color:#253f3b!important}
+  #billing-print-stage .quote-brand span,#billing-print-stage .quote-code span{color:#64748b!important}
+  #billing-print-stage .quote-code b{color:#0f766e!important}
+  #billing-print-stage .recipient{background:#f7faf9!important;border-color:#d8e7e3!important}
+  #billing-print-stage .recipient span{color:#64748b!important}
+  #billing-print-stage .recipient b{color:#17322f!important}
+  #billing-print-stage .quote-table thead th{background:#0f766e!important;color:#fff!important;border-color:#0b5e59!important}
+  #billing-print-stage .quote-table tbody tr:nth-child(even) td{background:#f8fbfa!important}
+  #billing-print-stage .quote-total{background:#eaf7f4!important;border-color:#b9ddd6!important}
+  #billing-print-stage .quote-total span{color:#506c67!important}
+  #billing-print-stage .quote-total b{color:#0f766e!important}
+  #billing-print-stage .terms{background:#fff8ef!important;border-color:#fed7aa!important}
+  #billing-print-stage .terms h3{color:#f97316!important}
+  #billing-print-stage .terms b{color:#8a4a16!important}
+  #billing-print-stage .repair-paper-note{background:#fff8ef!important;border-left-color:#f97316!important}
+  #billing-print-stage .repair-paper-note b{color:#9a4b12!important}
+  #billing-print-stage .doc-paper .narrative-body h3{background:#eef8f6!important;border-left-color:#f97316!important;color:#0f766e!important}
+  #billing-print-stage .doc-paper .narrative-body p{color:#334155!important}
+  #billing-print-stage .proposal-commercial>h3{color:#f97316!important}
+  #billing-print-stage .quote-footer{border-top-color:#d9e7e4!important}
+  #billing-print-stage .quote-footer>div:first-child b{color:#f97316!important}
+  #billing-print-stage .signature span{color:#64748b!important}
+  #billing-print-stage .signature b{color:#0f766e!important}
+}
