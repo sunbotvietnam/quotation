@@ -13,7 +13,7 @@ const tests = [
   ["production loads only the clean North Star application", () => {
     assert.match(files.index, /northstar-app\.js/);
     assert.match(files.index, /northstar\.css/);
-    assert.doesNotMatch(files.index, /app\.js|approval-workflow|commercial-configurator|legacy-builder|print-stable-fix/);
+    assert.doesNotMatch(files.index, /src=["']\.\/app\.js|approval-workflow|commercial-configurator|legacy-builder|print-stable-fix/);
   }],
   ["ID/password login remains server-authenticated", () => {
     assert.match(files.app, /quotationAccess/);
