@@ -1,0 +1,23 @@
+/* Sunbot quotation refinement V15 — isolated A4 output, modeled on Billing app print flow. */
+.billing-print-stage{display:none}
+.sale-approved-note{margin:0 0 14px;padding:11px 13px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;color:#475569;font-size:13px}
+.billing-output-actions{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);padding:10px 0 14px;margin-bottom:10px;border-bottom:1px solid #e2e8f0}
+.doc-paper .narrative-body{margin-top:18px;color:#1f2937;font-size:13px;line-height:1.65}
+.doc-paper .narrative-body h3{margin:16px 0 7px;color:#0f766e;font-size:14px}
+.doc-paper .narrative-body p{margin:0 0 10px;text-align:justify}
+.proposal-commercial{margin-top:18px}
+.proposal-commercial>h3{font-size:13px;color:#f97316;margin:0 0 10px}
+
+@media print{
+  @page{size:A4 portrait;margin:0}
+  html,body{background:#fff!important;width:auto!important;height:auto!important;overflow:visible!important;margin:0!important;padding:0!important}
+  body>*:not(#billing-print-stage){display:none!important}
+  #billing-print-stage.billing-print-stage{display:block!important;position:static!important;width:210mm!important;margin:0!important;padding:0!important;background:#fff!important}
+  #billing-print-stage .billing-print-paper{display:block!important;width:210mm!important;min-height:297mm!important;margin:0!important;padding:0!important;background:#fff!important;box-shadow:none!important}
+  #billing-print-stage .quote-paper{display:block!important;width:210mm!important;min-height:297mm!important;margin:0!important;box-shadow:none!important;border:none!important;border-radius:0!important;page-break-after:auto!important;break-after:auto!important}
+  #billing-print-stage .screen-only,#billing-print-stage .no-print,#billing-print-stage button{display:none!important}
+  #billing-print-stage .quote-table{page-break-inside:auto!important}
+  #billing-print-stage .quote-table tr{page-break-inside:avoid!important;break-inside:avoid!important}
+  #billing-print-stage .quote-table thead{display:table-header-group!important}
+  #billing-print-stage .quote-footer{page-break-inside:avoid!important;break-inside:avoid!important}
+}
