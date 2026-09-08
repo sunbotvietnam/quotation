@@ -1,0 +1,34 @@
+/* Sunbot quotation refinement V17 — document typography, grouping and footer discipline. */
+.doc-title-editor{margin:16px 0;padding:14px 15px;border:1px solid #d7e5e1;border-radius:14px;background:linear-gradient(135deg,#fbfefd,#f7fbfa)}
+.doc-title-editor label{color:#0f766e;font-weight:800}.doc-title-editor small{display:block;margin-top:5px;color:#667c78;line-height:1.45}
+.recommendation-help{margin:0 0 10px;padding:9px 11px;border-left:3px solid #f97316;background:#fff8ef;color:#6f5947;border-radius:0 8px 8px 0;font-size:11px;line-height:1.45}
+.line-role-select{min-width:145px;padding:7px 8px;border:1px solid #d8e4e1;border-radius:8px;background:#fff;color:#314b47;font-size:11px}
+.recommendation-divider td{background:#fff8ef!important;border-top:2px solid #f97316!important;border-bottom:1px solid #fed7aa!important;padding:9px 10px!important}
+.recommendation-divider span{display:block;color:#b45309;font-size:10px;font-weight:900;letter-spacing:.08em}
+.recommendation-divider small{display:block;margin-top:2px;color:#80664d;font-size:9px;font-weight:400}
+.commercial-discount{display:grid;grid-template-columns:auto auto;gap:2px 10px;align-items:center;margin:10px 0 8px;padding:9px 11px;border:1px solid #fed7aa;border-radius:10px;background:#fff8ef}
+.commercial-discount span{color:#a95512;font-size:9px;font-weight:900;letter-spacing:.08em}.commercial-discount b{justify-self:end;color:#0f766e;font-size:16px}.commercial-discount small{grid-column:1/-1;color:#6f5947;font-size:8.5px;font-weight:400;line-height:1.4}
+.v17-doc{box-sizing:border-box;display:flex;flex-direction:column}
+.v17-doc .narrative-body{margin-top:16px;font-size:11.2px;line-height:1.62;color:#334155;font-weight:400!important}
+.v17-doc .narrative-section{margin:0 0 13px;break-inside:avoid-page;page-break-inside:avoid}
+.v17-doc .narrative-section h3{margin:0 0 7px;padding:6px 9px;border-left:3px solid #f97316;background:#eef8f6;color:#0f766e;border-radius:0 7px 7px 0;font-size:12.4px;line-height:1.35;font-weight:800;break-after:avoid-page;page-break-after:avoid}
+.v17-doc .narrative-section p{margin:0 0 7px;text-align:justify;color:#334155;font-size:10.8px;line-height:1.65;font-weight:400!important;orphans:3;widows:3}
+.v17-doc .narrative-section p b,.v17-doc .narrative-section p strong{font-weight:600!important}
+.v17-doc .proposal-commercial{margin-top:15px;break-before:auto}.v17-doc .proposal-commercial>h3{margin:0 0 8px;color:#f97316;font-size:11px;letter-spacing:.06em;font-weight:900}
+.v17-doc .doc-footer{margin-top:auto;border-top:1px solid #d9e7e4;padding-top:8px;break-inside:avoid;page-break-inside:avoid}
+.v17-doc .quote-accent.bottom{margin-top:8px}
+
+@media print{
+  #billing-print-stage .v17-doc{display:flex!important;flex-direction:column!important;box-sizing:border-box!important;min-height:297mm!important}
+  #billing-print-stage .v17-doc .narrative-body{font-weight:400!important}
+  #billing-print-stage .v17-doc .narrative-section{break-inside:avoid-page!important;page-break-inside:avoid!important}
+  #billing-print-stage .v17-doc .narrative-section h3{font-weight:800!important;break-after:avoid-page!important;page-break-after:avoid!important}
+  #billing-print-stage .v17-doc .narrative-section p{font-weight:400!important;color:#334155!important;orphans:3!important;widows:3!important}
+  #billing-print-stage .v17-doc .doc-footer{margin-top:auto!important;border-top:1px solid #d9e7e4!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  #billing-print-stage .recommendation-divider td{background:#fff8ef!important;border-top-color:#f97316!important;border-bottom-color:#fed7aa!important}
+  #billing-print-stage .recommendation-divider span{color:#b45309!important}
+  #billing-print-stage .commercial-discount{background:#fff8ef!important;border-color:#fed7aa!important}
+  #billing-print-stage .commercial-discount span{color:#a95512!important}
+  #billing-print-stage .commercial-discount b{color:#0f766e!important}
+}
+@media(max-width:900px){.line-role-select{min-width:118px}.doc-title-editor{padding:12px}.v17-doc .narrative-section p{text-align:left}}
