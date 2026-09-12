@@ -14,15 +14,18 @@
     'CERT_1','CERT_2'
   ]);
 
+  function siteCountV24(b){return Math.max(1,Math.floor(Number(b?.deployment_sites||1)))}
+  function modulesByScaleV24(students){students=Number(students||0);if(students<=300)return 1;if(students<=800)return 2;return 0}
+  function requiredModulesV24(b){const base=modulesByScaleV24(b?.learner_count);return base?Math.max(base,siteCountV24(b)):0}
+
   function standardPriceForLine(line){
     const id=String(line?.item_id||'');
-    if(id==='EQUIPMENT_CAPITAL_RECOVERY')return Number(line?.proposed_unit_price||0); // dynamic formula line, validated against recalculation below
     const item=catalogItem(id);
     return Number(itemPrice(item)||0);
   }
 
   function expectedRecoveryPrice(b){
-    const modules=(typeof requiredModules==='function')?requiredModules(b):0;
+    const modules=requiredModulesV24(b);
     const months=Number(b?.recovery_months||24)===36?36:24;
     const moduleItem=catalogItem('EQUIPMENT_MODULE_STANDARD');
     const moduleValue=Number(itemPrice(moduleItem)||0);
@@ -57,16 +60,15 @@
 
   applyTemplate=function(b){
     oldApplyTemplateV24(b);
-    // Preserve the agreed governance after any template recalculation.
     // Program fee is the only line intentionally affected by discount_pct.
+    // Every template recalculation restores protected lines to standard price.
     (b.lines||[]).forEach(l=>{
       const id=String(l.item_id||'');
       if(!PROTECTED_IDS.has(id))return;
       if(id==='EQUIPMENT_CAPITAL_RECOVERY'){
         l.proposed_unit_price=expectedRecoveryPrice(b);
       }else{
-        const item=catalogItem(id);
-        const standard=Number(itemPrice(item)||0);
+        const standard=standardPriceForLine(l);
         if(standard>0)l.proposed_unit_price=standard;
       }
     });
