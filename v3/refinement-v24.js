@@ -26,10 +26,11 @@
 
   function expectedRecoveryPrice(b){
     const modules=requiredModulesV24(b);
-    const months=Number(b?.recovery_months||24)===36?36:24;
+    const term=Number(b?.recovery_months||24)===36?36:24;
     const moduleItem=catalogItem('EQUIPMENT_MODULE_STANDARD');
     const moduleValue=Number(itemPrice(moduleItem)||0);
-    return Math.round(modules*moduleValue*1.30/months*12);
+    // Đơn giá dòng thu hồi vốn vẫn là mức 12 tháng; V25 prorate bằng số lượng năm tương ứng để backend không hiểu nhầm là chiết khấu.
+    return Math.round(modules*moduleValue*1.30/term*12);
   }
 
   function protectedPriceChanged(b,line){
@@ -46,7 +47,7 @@
     let html=oldBuilderFormV24(kind);
     if(kind!=='SOLUTION')return html;
     html=html.replace('Giảm giá gói chính (%)','Giảm phí chương trình (%)');
-    html=html.replace('Admin tự xử lý đến 7%; trên 7% cần ghi phê duyệt ngoại lệ CEO.','Chỉ áp dụng lên phí chương trình. QA điểm, thiết bị, thu hồi vốn, đào tạo và sát hạch giữ nguyên giá chuẩn; mọi ngoại lệ cần CEO phê duyệt.');
+    html=html.replace('Admin tự xử lý đến 7%; trên 7% cần ghi phê duyệt ngoại lệ CEO.','Chỉ áp dụng lên phí chương trình. Phí đồng hành điểm triển khai, thiết bị, thu hồi vốn, đào tạo và sát hạch không giảm theo tỷ lệ chung; mọi ngoại lệ cần CEO phê duyệt.');
     return html;
   };
 
@@ -54,14 +55,14 @@
     const html=oldLineTableV24(b);
     if(!b||b.kind!=='SOLUTION')return html;
     const exceptions=protectedExceptions(b);
-    const note=`<div class="policy-note"><b>Quy tắc chiết khấu:</b> Ô giảm giá phía trên chỉ tác động lên <b>phí chương trình</b>. Các dòng QA điểm, mô-đun thiết bị, thu hồi vốn, đào tạo và sát hạch là giá chuẩn. Nếu sửa trực tiếp đơn giá các dòng này, bắt buộc ghi phê duyệt ngoại lệ CEO trước khi phát hành.${exceptions.length?`<br><b>Đang có ${exceptions.length} dòng ngoại lệ giá cần phê duyệt CEO.</b>`:''}</div>`;
+    const note=`<div class="policy-note"><b>Quy tắc chiết khấu:</b> Ô giảm giá phía trên chỉ tác động lên <b>phí chương trình</b>. Phí đồng hành điểm triển khai, mô-đun thiết bị, thu hồi vốn, đào tạo và sát hạch được tính theo cơ chế riêng. Nếu sửa trực tiếp đơn giá các dòng này khác cơ chế chuẩn, bắt buộc ghi phê duyệt ngoại lệ CEO trước khi phát hành.${exceptions.length?`<br><b>Đang có ${exceptions.length} dòng ngoại lệ giá cần phê duyệt CEO.</b>`:''}</div>`;
     return html+note;
   };
 
   applyTemplate=function(b){
     oldApplyTemplateV24(b);
     // Program fee is the only line intentionally affected by discount_pct.
-    // Every template recalculation restores protected lines to standard price.
+    // Proration theo tháng được V25 thể hiện bằng lượng kỳ/năm, không làm thay đổi đơn giá chuẩn của dòng được bảo vệ.
     (b.lines||[]).forEach(l=>{
       const id=String(l.item_id||'');
       if(!PROTECTED_IDS.has(id))return;
@@ -81,7 +82,7 @@
       const exceptions=protectedExceptions(b);
       if(exceptions.length&&!String(b.ceo_approval_note||'').trim()){
         const labels=exceptions.map(l=>catalogItem(l.item_id)?.name||l.item_id).join(', ');
-        return setNotice(`Có thay đổi giá ngoài phí chương trình (${labels}). Hãy nhập phê duyệt ngoại lệ CEO trước khi phát hành.`,'error');
+        return setNotice(`Có thay đổi giá ngoài cơ chế chuẩn (${labels}). Hãy nhập phê duyệt ngoại lệ CEO trước khi phát hành.`,'error');
       }
       if(Number(b.discount_pct||0)>7&&!String(b.ceo_approval_note||'').trim()){
         return setNotice('Giảm phí chương trình trên 7% cần ghi phê duyệt ngoại lệ CEO trước khi phát hành.','error');
