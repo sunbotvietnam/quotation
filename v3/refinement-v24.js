@@ -17,7 +17,6 @@
   function siteCountV24(b){return Math.max(1,Math.floor(Number(b?.deployment_sites||1)))}
   function modulesByScaleV24(students){students=Number(students||0);if(students<=300)return 1;if(students<=800)return 2;return 0}
   function requiredModulesV24(b){const base=modulesByScaleV24(b?.learner_count);return base?Math.max(base,siteCountV24(b)):0}
-  function monthsRemainingV24(b){const explicit=Number(b?.months_remaining||0);if(explicit>=1&&explicit<=9)return explicit;const m=Number(b?.start_month||9);return ({9:9,10:8,11:7,12:6,1:5,2:4,3:3,4:2,5:1})[m]||9}
 
   function standardPriceForLine(line){
     const id=String(line?.item_id||'');
@@ -30,15 +29,15 @@
     const term=Number(b?.recovery_months||24)===36?36:24;
     const moduleItem=catalogItem('EQUIPMENT_MODULE_STANDARD');
     const moduleValue=Number(itemPrice(moduleItem)||0);
-    return Math.round(modules*moduleValue*1.30/term*monthsRemainingV24(b));
+    // Đơn giá dòng thu hồi vốn vẫn là mức 12 tháng; V25 prorate bằng số lượng năm tương ứng để backend không hiểu nhầm là chiết khấu.
+    return Math.round(modules*moduleValue*1.30/term*12);
   }
-  function expectedSitePrice(b,line){return Math.round(standardPriceForLine(line)*monthsRemainingV24(b)/9)}
 
   function protectedPriceChanged(b,line){
     const id=String(line?.item_id||'');
     if(!PROTECTED_IDS.has(id))return false;
     const current=Number(line?.proposed_unit_price||0);
-    const expected=id==='EQUIPMENT_CAPITAL_RECOVERY'?expectedRecoveryPrice(b):(id==='DEPLOYMENT_SITE_QA'?expectedSitePrice(b,line):standardPriceForLine(line));
+    const expected=id==='EQUIPMENT_CAPITAL_RECOVERY'?expectedRecoveryPrice(b):standardPriceForLine(line);
     return Math.abs(current-expected)>0.5;
   }
 
@@ -63,14 +62,12 @@
   applyTemplate=function(b){
     oldApplyTemplateV24(b);
     // Program fee is the only line intentionally affected by discount_pct.
-    // Protected lines use their current policy value; start-month proration is policy, not a discount.
+    // Proration theo tháng được V25 thể hiện bằng lượng kỳ/năm, không làm thay đổi đơn giá chuẩn của dòng được bảo vệ.
     (b.lines||[]).forEach(l=>{
       const id=String(l.item_id||'');
       if(!PROTECTED_IDS.has(id))return;
       if(id==='EQUIPMENT_CAPITAL_RECOVERY'){
         l.proposed_unit_price=expectedRecoveryPrice(b);
-      }else if(id==='DEPLOYMENT_SITE_QA'){
-        l.proposed_unit_price=expectedSitePrice(b,l);
       }else{
         const standard=standardPriceForLine(l);
         if(standard>0)l.proposed_unit_price=standard;
