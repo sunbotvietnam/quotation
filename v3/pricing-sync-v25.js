@@ -38,4 +38,6 @@
     const discount=n(b.discount_pct,0)>0?`<small>Phí chương trình trước giảm: ${money(before)} · sau giảm ${n(b.discount_pct,0)}%: ${money(fee)}</small>`:'';
     return `<div class="template-card"><div><span class="eyebrow">PHƯƠNG ÁN NĂM HỌC HIỆN TẠI</span><h3>${children.toLocaleString('vi-VN')} trẻ · ${freq} tiết/tháng · ${ps} chương trình · ${siteN} điểm · bắt đầu tháng ${start}</h3><p>Phí chương trình theo ${m}/9 tháng: <b>${money(fee)}</b>. ${siteN>1?`Phí đồng hành ${siteN-1} điểm bổ sung trong năm học này: <b>${money(extraSite)}</b>.`:'Điểm triển khai đầu tiên nằm trong phạm vi chương trình.'}<br>${assetText}</p>${discount}</div><div class="template-price"><span>${m} tháng còn lại</span><b>${money(fee)}</b></div></div>`;
   };
+  // Chạy trước listener của builder để mọi lần đổi tháng đều cập nhật dòng tiền trước khi UI render lại.
+  document.addEventListener('change',function(e){const el=e.target;if(!el||el.name!=='start_month'||!document.getElementById('builder-form')||!state.builder)return;syncBuilderFromForm();state.builder.months_remaining=({9:9,10:8,11:7,12:6,1:5,2:4,3:3,4:2,5:1})[Number(el.value||9)]||9;applyTemplate(state.builder);},true);
 })();
